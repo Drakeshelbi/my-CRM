@@ -1,0 +1,489 @@
+-- Acontinuación se muestra la creacion de mi base de datos para un CRM creado en Flask y SQL Server
+
+-- SE CREA LA BD
+CREATE DATABASE ERP_Database;
+GO
+
+USE ERP_Database;
+GO
+
+-- Tabla de usuarios del sistema
+CREATE TABLE usuarios (
+    id VARCHAR(30) PRIMARY KEY,
+    nombre NVARCHAR(100) NOT NULL,
+    email NVARCHAR(100) UNIQUE NOT NULL,
+    password NVARCHAR(255) NOT NULL,
+    rol NVARCHAR(50) DEFAULT 'usuario',
+    activo BIT DEFAULT 1,
+    fecha_creacion DATETIME2 DEFAULT GETDATE()
+);
+
+-- Tabla de clientes
+CREATE TABLE clientes (
+    id VARCHAR(30) PRIMARY KEY,
+    nombre NVARCHAR(200) NOT NULL,
+    email NVARCHAR(100),
+    telefono NVARCHAR(20),
+    direccion NVARCHAR(500),
+    ciudad NVARCHAR(100),
+    codigo_postal NVARCHAR(10),
+    rfc NVARCHAR(20),
+    activo BIT DEFAULT 1,
+    fecha_registro DATETIME2 DEFAULT GETDATE()
+);
+
+-- Tabla de empleados
+CREATE TABLE empleados (
+    id VARCHAR(30) PRIMARY KEY,
+    nombre NVARCHAR(200) NOT NULL,
+    email NVARCHAR(100),
+    telefono NVARCHAR(20),
+    direccion NVARCHAR(500),
+    cargo NVARCHAR(100),
+    departamento NVARCHAR(100),
+    salario DECIMAL(10,2),
+    fecha_ingreso DATE,
+    fecha_nacimiento DATE,
+    rfc NVARCHAR(20),
+    nss NVARCHAR(20),
+    activo BIT DEFAULT 1,
+    fecha_creacion DATETIME2 DEFAULT GETDATE()
+);
+
+-- Tabla de facturas
+CREATE TABLE facturas (
+    id VARCHAR(30) PRIMARY KEY,
+    numero INT NOT NULL,
+    cliente_id VARCHAR(30) NOT NULL,
+    fecha DATE NOT NULL,
+    subtotal DECIMAL(12,2) DEFAULT 0,
+    impuestos DECIMAL(12,2) DEFAULT 0,
+    total DECIMAL(12,2) NOT NULL,
+    estado NVARCHAR(20) DEFAULT 'pendiente', -- pendiente, pagada, vencida, cancelada
+    fecha_vencimiento DATE,
+    observaciones NVARCHAR(1000),
+    usuario_id VARCHAR(30),
+    fecha_creacion DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- Tabla de detalles de facturas
+CREATE TABLE factura_detalles (
+    id VARCHAR(30) PRIMARY KEY,
+    factura_id VARCHAR(30) NOT NULL,
+    descripcion NVARCHAR(500) NOT NULL,
+    cantidad DECIMAL(10,2) NOT NULL,
+    precio_unitario DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+    FOREIGN KEY (factura_id) REFERENCES facturas(id) ON DELETE CASCADE
+);
+
+-- Tabla de remisiones
+CREATE TABLE remisiones (
+    id VARCHAR(30) PRIMARY KEY,
+    numero INT NOT NULL,
+    cliente_id VARCHAR(30) NOT NULL,
+    fecha DATE NOT NULL,
+    estado NVARCHAR(20) DEFAULT 'pendiente', -- pendiente, entregada, cancelada
+    observaciones NVARCHAR(1000),
+    usuario_id VARCHAR(30),
+    fecha_creacion DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- Tabla de detalles de remisiones
+CREATE TABLE remision_detalles (
+    id VARCHAR(30) PRIMARY KEY,
+    remision_id VARCHAR(30) NOT NULL,
+    descripcion NVARCHAR(500) NOT NULL,
+    cantidad DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (remision_id) REFERENCES remisiones(id) ON DELETE CASCADE
+);
+
+-- Tabla de nómina
+CREATE TABLE nomina (
+    id VARCHAR(30) PRIMARY KEY,
+    empleado_id VARCHAR(30) NOT NULL,
+    periodo NVARCHAR(20) NOT NULL, -- Ejemplo: "2024-01", "2024-02"
+    salario_base DECIMAL(10,2) NOT NULL,
+    horas_extra DECIMAL(5,2) DEFAULT 0,
+    valor_hora_extra DECIMAL(8,2) DEFAULT 0,
+    bonificaciones DECIMAL(10,2) DEFAULT 0,
+    deducciones DECIMAL(10,2) DEFAULT 0,
+    isr DECIMAL(10,2) DEFAULT 0,
+    imss DECIMAL(10,2) DEFAULT 0,
+    total DECIMAL(10,2) NOT NULL,
+    fecha_generacion DATETIME2 DEFAULT GETDATE(),
+    pagado BIT DEFAULT 0,
+    fecha_pago DATETIME2,
+    FOREIGN KEY (empleado_id) REFERENCES empleados(id)
+);
+
+-- Tabla de productos/servicios
+CREATE TABLE productos (
+    id VARCHAR(30) PRIMARY KEY,
+    codigo NVARCHAR(50) UNIQUE NOT NULL,
+    nombre NVARCHAR(200) NOT NULL,
+    descripcion NVARCHAR(1000),
+    precio DECIMAL(10,2) NOT NULL,
+    costo DECIMAL(10,2),
+    stock INT DEFAULT 0,
+    stock_minimo INT DEFAULT 0,
+    categoria NVARCHAR(100),
+    activo BIT DEFAULT 1,
+    fecha_creacion DATETIME2 DEFAULT GETDATE()
+);
+
+-- Tabla de configuración del sistema
+CREATE TABLE configuracion (
+    id VARCHAR(30) PRIMARY KEY,
+    clave NVARCHAR(100) UNIQUE NOT NULL,
+    valor NVARCHAR(1000),
+    descripcion NVARCHAR(500),
+    tipo NVARCHAR(50) DEFAULT 'texto', -- texto, numero, booleano, json
+    fecha_modificacion DATETIME2 DEFAULT GETDATE()
+);
+
+-- Índices para mejorar el rendimiento
+CREATE INDEX IX_facturas_cliente_fecha ON facturas(cliente_id, fecha);
+CREATE INDEX IX_facturas_numero ON facturas(numero);
+CREATE INDEX IX_remisiones_cliente_fecha ON remisiones(cliente_id, fecha);
+CREATE INDEX IX_nomina_empleado_periodo ON nomina(empleado_id, periodo);
+CREATE INDEX IX_leads_estado_origen ON leads(estado, origen);
+CREATE INDEX IX_oportunidades_estado_etapa ON oportunidades(estado, etapa);
+CREATE INDEX IX_actividades_fecha_usuario ON actividades_crm(fecha_programada, usuario_id);
+
+-- Insertar usuario administrador por defecto
+-- Password: "admin123" hasheado en MD5
+INSERT INTO usuarios (ID, nombre, email, password, rol) 
+VALUES ('A000001', 'Administrador', 'admin@empresa.com', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', 'administrador'),
+('RH00001', 'RecursosHumanos', 'RH@empresa.com', 'fggd54jg96dfs32mh594bvgjf01gsp5ngdf', 'JefeRH');
+
+-- Insertar algunos datos de ejemplo
+INSERT INTO clientes (ID, nombre, email, telefono, direccion, ciudad) VALUES
+('C0001', 'Empresa ABC S.A. de C.V.', 'contacto@empresaabc.com', '555-1234', 'Av. Principal 123', 'Ciudad de México'),
+('C0002', 'Comercializadora XYZ', 'ventas@xyz.com', '555-5678', 'Calle Secundaria 456', 'Guadalajara'),
+('C0003', 'Servicios Integrales DEF', 'info@def.com', '555-9012', 'Boulevard Norte 789', 'Monterrey');
+
+INSERT INTO empleados (id, nombre, email, telefono, cargo, departamento, salario, fecha_ingreso) VALUES
+('E0001', 'Juan Pérez López', 'juan.perez@empresa.com', '555-1111', 'Gerente de Ventas', 'Ventas', 25000.00, '2024-01-15'),
+('E0002', 'María García Rodríguez', 'maria.garcia@empresa.com', '555-2222', 'Contadora', 'Contabilidad', 20000.00, '2024-02-01'),
+('E0003', 'Carlos Martínez Sánchez', 'carlos.martinez@empresa.com', '555-3333', 'Desarrollador', 'TI', 22000.00, '2024-01-20');
+
+INSERT INTO productos (id, codigo, nombre, descripcion, precio, costo, stock, categoria) VALUES
+('00001','PROD001', 'Servicio de Consultoría', 'Servicio de consultoría empresarial', 1500.00, 800.00, 0, 'Servicios'),
+('00002', 'PROD002', 'Software ERP', 'Licencia de software ERP', 5000.00, 2000.00, 10, 'Software'),
+('00003', 'PROD003', 'Capacitación', 'Curso de capacitación personalizado', 2000.00, 1000.00, 0, 'Servicios');
+
+-- Insertar configuraciones iniciales
+INSERT INTO configuracion (id, clave, valor, descripcion, tipo) VALUES
+('CF0001', 'empresa_nombre', 'Mi Empresa S.A. de C.V.', 'Nombre de la empresa', 'texto'),
+('CF0002', 'empresa_rfc', 'EMP123456789', 'RFC de la empresa', 'texto'),
+('CF0003', 'empresa_direccion', 'Av. Empresa 123, Col. Centro', 'Dirección de la empresa', 'texto'),
+('CF0004', 'empresa_telefono', '555-0000', 'Teléfono de la empresa', 'texto'),
+('CF0005', 'empresa_email', 'contacto@miempresa.com', 'Email de contacto', 'texto'),
+('CF0006', 'facebook_app_id', '', 'App ID de Facebook para marketing', 'texto'),
+('CF0007','facebook_app_secret', '', 'App Secret de Facebook', 'texto'),
+('CF0008', 'facebook_access_token', '', 'Access Token de Facebook', 'texto'),
+('CF0009', 'iva_porcentaje', '16', 'Porcentaje de IVA', 'numero'),
+('CF0010', 'moneda', 'MXN', 'Moneda del sistema', 'texto');
+
+-- Crear vistas útiles para reportes
+GO
+
+-- Vista de facturas con información del cliente
+CREATE VIEW vista_facturas_completa AS
+SELECT 
+    f.id,
+    f.numero,
+    f.fecha,
+    f.fecha_vencimiento,
+    f.subtotal,
+    f.impuestos,
+    f.total,
+    f.estado,
+    c.nombre as cliente_nombre,
+    c.email as cliente_email,
+    c.telefono as cliente_telefono,
+    u.nombre as usuario_nombre
+FROM facturas f
+LEFT JOIN clientes c ON f.cliente_id = c.id
+LEFT JOIN usuarios u ON f.usuario_id = u.id;
+
+GO
+
+-- Vista de nómina con información del empleado
+CREATE VIEW vista_nomina_completa AS
+SELECT 
+    n.id,
+    n.periodo,
+    n.salario_base,
+    n.horas_extra,
+    n.bonificaciones,
+    n.deducciones,
+    n.total,
+    n.pagado,
+    n.fecha_pago,
+    e.nombre as empleado_nombre,
+    e.cargo,
+    e.departamento
+FROM nomina n
+LEFT JOIN empleados e ON n.empleado_id = e.id;
+
+GO
+
+-- Vista de leads con actividades recientes
+CREATE VIEW vista_leads_actividad AS
+SELECT 
+    l.id,
+    l.nombre,
+    l.email,
+    l.telefono,
+    l.empresa,
+    l.origen,
+    l.estado,
+    l.puntuacion,
+    l.fecha_creacion,
+    u.nombre as asignado_nombre,
+    MAX(a.fecha_completada) as ultima_actividad
+FROM leads l
+LEFT JOIN usuarios u ON l.asignado_a = u.id
+LEFT JOIN actividades_crm a ON l.id = a.lead_id
+GROUP BY l.id, l.nombre, l.email, l.telefono, l.empresa, l.origen, l.estado, l.puntuacion, l.fecha_creacion, u.nombre;
+
+GO
+
+-- Procedimientos almacenados útiles
+
+-- Procedimiento para generar número de factura
+CREATE PROCEDURE sp_generar_numero_factura
+AS
+BEGIN
+    DECLARE @siguiente_numero INT;
+    
+    SELECT @siguiente_numero = ISNULL(MAX(numero), 0) + 1 
+    FROM facturas;
+    
+    SELECT @siguiente_numero as siguiente_numero;
+END;
+
+GO
+
+-- Procedimiento para calcular estadísticas del dashboard
+CREATE PROCEDURE sp_estadisticas_dashboard
+AS
+BEGIN
+    SELECT 
+        (SELECT COUNT(*) FROM clientes WHERE activo = 1) as total_clientes,
+        (SELECT COUNT(*) FROM facturas WHERE MONTH(fecha) = MONTH(GETDATE()) AND YEAR(fecha) = YEAR(GETDATE())) as facturas_mes,
+        (SELECT ISNULL(SUM(total), 0) FROM facturas WHERE MONTH(fecha) = MONTH(GETDATE()) AND YEAR(fecha) = YEAR(GETDATE())) as ventas_mes,
+        (SELECT COUNT(*) FROM empleados WHERE activo = 1) as empleados_activos,
+        (SELECT COUNT(*) FROM leads WHERE estado = 'nuevo') as leads_nuevos,
+        (SELECT COUNT(*) FROM oportunidades WHERE estado = 'abierta') as oportunidades_abiertas;
+END;
+
+GO
+
+-- Procedimiento para actualizar puntuación de leads
+CREATE PROCEDURE sp_actualizar_puntuacion_lead
+    @lead_id INT
+AS
+BEGIN
+    DECLARE @puntuacion INT = 0;
+    
+    -- Puntuación base por origen
+    SELECT @puntuacion = @puntuacion + 
+        CASE origen
+            WHEN 'Facebook' THEN 20
+            WHEN 'Google' THEN 25
+            WHEN 'Referido' THEN 30
+            WHEN 'Web' THEN 15
+            ELSE 10
+        END
+    FROM leads WHERE id = @lead_id;
+    
+    -- Puntuación por actividades
+    SELECT @puntuacion = @puntuacion + (COUNT(*) * 5)
+    FROM actividades_crm 
+    WHERE lead_id = @lead_id AND estado = 'completada';
+    
+    -- Puntuación por empresa conocida
+    IF EXISTS (SELECT 1 FROM leads WHERE id = @lead_id AND empresa IS NOT NULL AND empresa != '')
+        SET @puntuacion = @puntuacion + 15;
+    
+    -- Actualizar puntuación
+    UPDATE leads SET puntuacion = @puntuacion WHERE id = @lead_id;
+END;
+
+GO
+
+-- Trigger para actualizar fecha de última actividad en leads
+CREATE TRIGGER tr_actividad_lead_update
+ON actividades_crm
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    UPDATE leads 
+    SET fecha_ultima_actividad = GETDATE()
+    FROM leads l
+    INNER JOIN inserted i ON l.id = i.lead_id
+    WHERE i.lead_id IS NOT NULL;
+END;
+
+GO
+
+-- Trigger para calcular subtotal en factura_detalles
+CREATE TRIGGER tr_factura_detalle_subtotal
+ON factura_detalles
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    -- Actualizar subtotal del detalle
+    UPDATE fd
+    SET subtotal = fd.cantidad * fd.precio_unitario
+    FROM factura_detalles fd
+    INNER JOIN inserted i ON fd.id = i.id;
+    
+    -- Actualizar totales de la factura
+    UPDATE f
+    SET subtotal = (SELECT SUM(subtotal) FROM factura_detalles WHERE factura_id = f.id),
+        impuestos = (SELECT SUM(subtotal) * 0.16 FROM factura_detalles WHERE factura_id = f.id),
+        total = (SELECT SUM(subtotal) * 1.16 FROM factura_detalles WHERE factura_id = f.id)
+    FROM facturas f
+    INNER JOIN inserted i ON f.id = i.factura_id;
+END;
+
+GO
+
+-- Función para obtener el siguiente período de nómina
+CREATE FUNCTION fn_siguiente_periodo_nomina()
+RETURNS NVARCHAR(7)
+AS
+BEGIN
+    DECLARE @periodo NVARCHAR(7);
+    DECLARE @anio INT = YEAR(GETDATE());
+    DECLARE @mes INT = MONTH(GETDATE());
+    
+    SET @periodo = CAST(@anio AS NVARCHAR(4)) + '-' + RIGHT('00' + CAST(@mes AS NVARCHAR(2)), 2);
+    
+    RETURN @periodo;
+END;
+
+GO
+
+PRINT 'Base de datos ERP creada exitosamente con todas las tablas, vistas, procedimientos y datos de ejemplo.';
+
+
+-- Script para crear las tablas del CRM en SQL Server
+
+-- Tabla de Leads
+CREATE TABLE leads (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    nombre NVARCHAR(100) NOT NULL,
+    email NVARCHAR(100) NOT NULL,
+    telefono NVARCHAR(20),
+    empresa NVARCHAR(200),
+	cargo NVARCHAR(200),
+	origen NVARCHAR(50) NOT NULL, -- Facebook, Website, Referido, etc.
+	estado NVARCHAR(20) DEFAULT 'nuevo', -- nuevo, contactado, calificado, convertido
+    notas NTEXT,
+    fecha_creacion DATETIME DEFAULT GETDATE(),
+    fecha_contacto DATETIME,
+    fecha_calificacion DATETIME,
+    fecha_conversion DATETIME,
+    usuario_id VARCHAR(30),
+    contactado_por VARCHAR(30),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (contactado_por) REFERENCES usuarios(id)
+);
+
+
+-- Tabla de Oportunidades
+CREATE TABLE oportunidades (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    cliente_id VARCHAR(30) NOT NULL,
+    descripcion NTEXT NOT NULL,
+    valor DECIMAL(15,2) NOT NULL,
+    probabilidad INT DEFAULT 50, -- Porcentaje de 0 a 100
+    estado NVARCHAR(20) DEFAULT 'prospecto', -- prospecto, propuesta, negociacion, cerrada
+    resultado NVARCHAR(20), -- ganada, perdida (cuando estado = cerrada)
+    fecha_creacion DATETIME DEFAULT GETDATE(),
+    fecha_cierre_estimada DATE,
+    fecha_cierre DATETIME,
+    fecha_actualizacion DATETIME,
+    notas NTEXT,
+    observaciones NVARCHAR(1000),
+    usuario_id VARCHAR(30),
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- Tabla de campañas de marketing
+CREATE TABLE campanias_marketing (
+    id VARCHAR(30) PRIMARY KEY,
+    nombre NVARCHAR(200) NOT NULL,
+    descripcion NVARCHAR(1000),
+    plataforma NVARCHAR(50), -- Facebook, Google, Email, etc.
+    presupuesto DECIMAL(10,2),
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    estado NVARCHAR(20) DEFAULT 'activa', -- activa, pausada, completada
+    clicks INT DEFAULT 0,
+    impresiones INT DEFAULT 0,
+    conversiones INT DEFAULT 0,
+    costo_por_click DECIMAL(8,4),
+    fecha_creacion DATETIME2 DEFAULT GETDATE()
+);
+
+-- Tabla de Actividades CRM (seguimiento de interacciones)
+CREATE TABLE actividades_crm (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    tipo NVARCHAR(50) NOT NULL, -- llamada, email, reunion, nota
+    descripcion NTEXT NOT NULL,
+    fecha_actividad DATETIME DEFAULT GETDATE(),
+    fecha_vencimiento DATETIME,
+    completada BIT DEFAULT 0,
+    lead_id INT,
+    cliente_id VARCHAR(30),
+    oportunidad_id INT,
+    usuario_id VARCHAR(30),
+    FOREIGN KEY (lead_id) REFERENCES leads(id),
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    FOREIGN KEY (oportunidad_id) REFERENCES oportunidades(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- Índices para mejorar rendimiento
+CREATE INDEX IX_leads_estado ON leads(estado);
+CREATE INDEX IX_leads_origen ON leads(origen);
+CREATE INDEX IX_leads_fecha_creacion ON leads(fecha_creacion);
+CREATE INDEX IX_oportunidades_estado ON oportunidades(estado);
+CREATE INDEX IX_oportunidades_cliente_id ON oportunidades(cliente_id);
+CREATE INDEX IX_oportunidades_fecha_creacion ON oportunidades(fecha_creacion);
+CREATE INDEX IX_actividades_fecha ON actividades_crm(fecha_actividad);
+CREATE INDEX IX_actividades_tipo ON actividades_crm(tipo);
+
+-- Datos de ejemplo para testing
+INSERT INTO leads (nombre, email, telefono, origen, estado, notas) VALUES
+('Juan Pérez', 'juan.perez@email.com', '555-0101', 'Facebook', 'nuevo', 'Interesado en servicios de consultoría'),
+('María García', 'maria.garcia@email.com', '555-0102', 'Website', 'contactado', 'Solicitó información sobre productos'),
+('Carlos López', 'carlos.lopez@email.com', '555-0103', 'Referido', 'calificado', 'Referido por cliente actual'),
+('Ana Martínez', 'ana.martinez@email.com', '555-0104', 'Email', 'nuevo', 'Suscrita a newsletter');
+
+-- Insertar algunas oportunidades de ejemplo (usando IDs de clientes existentes)
+-- Nota: Ajusta los cliente_id según los datos de tu tabla clientes
+INSERT INTO oportunidades (cliente_id, descripcion, valor, probabilidad, estado, fecha_cierre_estimada) VALUES
+('C0001', 'Proyecto de implementación ERP completo', 50000.00, 75, 'propuesta', '2025-07-15'),
+('C0002', 'Consultoría en procesos empresariales', 15000.00, 50, 'prospecto', '2025-06-30'),
+('C0001', 'Capacitación en software', 8000.00, 90, 'negociacion', '2025-06-15');
+
+-- Insertar algunas campañas de ejemplo
+INSERT INTO campanias_marketing (id, nombre, descripcion, plataforma, presupuesto, fecha_inicio, fecha_fin, estado) VALUES
+('M0001', 'Campaña Primavera 2025', 'Promoción de servicios empresariales', 'Facebook', 5000.00, '2025-06-01', '2025-06-30', 'activa'),
+('M0002', 'Email Marketing Q2', 'Newsletter y ofertas especiales', 'Email', 2000.00, '2025-04-01', '2025-06-30', 'activa'),
+('M0003', 'Google Ads - ERP', 'Publicidad en Google para software ERP', 'Google', 8000.00, '2025-05-01', '2025-07-31', 'borrador');
+
+
+
