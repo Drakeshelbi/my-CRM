@@ -1,0 +1,511 @@
+<!-- templates/generar_nomina.html -->
+{% extends "base.html" %}
+
+{% block title %}Generar Nómina - ERP Empresarial{% endblock %}
+{% block page_title %}Generar Nómina{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="text-primary">
+                <i class="fas fa-calculator me-2"></i>
+                Generar Nueva Nómina
+            </h4>
+            <a href="/nomina" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Volver a Nómina
+            </a>
+        </div>
+    </div>
+</div>
+
+<form method="POST" id="nominaForm">
+    <div class="row">
+        <!-- Configuración General -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Configuración General
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="periodo" class="form-label">Período *</label>
+                        <input type="month" class="form-control" id="periodo" name="periodo" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tipo_nomina" class="form-label">Tipo de Nómina *</label>
+                        <select class="form-select" id="tipo_nomina" name="tipo_nomina" required>
+                            <option value="">Seleccione...</option>
+                            <option value="quincenal">Quincenal</option>
+                            <option value="mensual">Mensual</option>
+                            <option value="semanal">Semanal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="fecha_pago" class="form-label">Fecha de Pago *</label>
+                        <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="incluir_bonificaciones" 
+                                   name="incluir_bonificaciones" checked>
+                            <label class="form-check-label" for="incluir_bonificaciones">
+                                Incluir Bonificaciones
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="calcular_deducciones" 
+                                   name="calcular_deducciones" checked>
+                            <label class="form-check-label" for="calcular_deducciones">
+                                Calcular Deducciones Automáticas
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <label for="porcentaje_seguridad_social" class="form-label">
+                            Seguridad Social (%)
+                        </label>
+                        <input type="number" class="form-control" id="porcentaje_seguridad_social" 
+                               name="porcentaje_seguridad_social" value="10" step="0.01" min="0" max="100">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="porcentaje_isr" class="form-label">
+                            ISR (%)
+                        </label>
+                        <input type="number" class="form-control" id="porcentaje_isr" 
+                               name="porcentaje_isr" value="15" step="0.01" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Selección de Empleados -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Empleados a Incluir
+                    </h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAll">
+                        <label class="form-check-label" for="selectAll">
+                            Seleccionar Todos
+                        </label>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="empleadosTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="50">
+                                        <input type="checkbox" id="masterCheck">
+                                    </th>
+                                    <th>Empleado</th>
+                                    <th>Cargo</th>
+                                    <th>Salario Base</th>
+                                    <th>Bonificaciones</th>
+                                    <th>Deducciones</th>
+                                    <th>Total Estimado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Aquí se cargarían los empleados desde la base de datos -->
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="empleados[]" value="1" class="empleado-check">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                            <div>
+                                                <strong>Juan Pérez</strong>
+                                                <br><small class="text-muted">juan.perez@empresa.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>Gerente</td>
+                                    <td>
+                                        <strong class="text-success">$15,000.00</strong>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm bonificacion-input" 
+                                               name="bonificacion_1" placeholder="0.00" step="0.01" min="0">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm deduccion-input" 
+                                               name="deduccion_1" placeholder="0.00" step="0.01" min="0">
+                                    </td>
+                                    <td class="total-estimado">
+                                        <strong class="text-primary">$15,000.00</strong>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="empleados[]" value="2" class="empleado-check">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-success rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                            <div>
+                                                <strong>María González</strong>
+                                                <br><small class="text-muted">maria.gonzalez@empresa.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>Contadora</td>
+                                    <td>
+                                        <strong class="text-success">$12,000.00</strong>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm bonificacion-input" 
+                                               name="bonificacion_2" placeholder="0.00" step="0.01" min="0">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm deduccion-input" 
+                                               name="deduccion_2" placeholder="0.00" step="0.01" min="0">
+                                    </td>
+                                    <td class="total-estimado">
+                                        <strong class="text-primary">$12,000.00</strong>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="empleados[]" value="3" class="empleado-check">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-info rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                            <div>
+                                                <strong>Carlos Rodríguez</strong>
+                                                <br><small class="text-muted">carlos.rodriguez@empresa.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>Vendedor</td>
+                                    <td>
+                                        <strong class="text-success">$8,000.00</strong>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm bonificacion-input" 
+                                               name="bonificacion_3" placeholder="0.00" step="0.01" min="0">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm deduccion-input" 
+                                               name="deduccion_3" placeholder="0.00" step="0.01" min="0">
+                                    </td>
+                                    <td class="total-estimado">
+                                        <strong class="text-primary">$8,000.00</strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Resumen y Acciones -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Resumen de Nómina
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h6 class="text-muted mb-1">Empleados Seleccionados</h6>
+                                <h4 class="text-primary mb-0" id="empleadosSeleccionados">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h6 class="text-muted mb-1">Total Salarios</h6>
+                                <h4 class="text-success mb-0" id="totalSalarios">$0.00</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h6 class="text-muted mb-1">Total Bonificaciones</h6>
+                                <h4 class="text-info mb-0" id="totalBonificaciones">$0.00</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h6 class="text-muted mb-1">Total Deducciones</h6>
+                                <h4 class="text-danger mb-0" id="totalDeducciones">$0.00</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Total Neto a Pagar: <span class="text-primary" id="totalNeto">$0.00</span></h5>
+                            <p class="text-muted">Este es el monto total que se pagará a todos los empleados seleccionados</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-outline-secondary me-2" onclick="previewNomina()">
+                                <i class="fas fa-eye me-2"></i>
+                                Vista Previa
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Generar Nómina
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Modal de Vista Previa -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Vista Previa de Nómina</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="previewContent">
+                <!-- Contenido de vista previa -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="printPreview()">
+                    <i class="fas fa-print me-2"></i>
+                    Imprimir Vista Previa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Inicializar fecha actual
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const currentMonth = today.toISOString().slice(0, 7);
+        document.getElementById('periodo').value = currentMonth;
+        
+        const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+        document.getElementById('fecha_pago').value = nextWeek.toISOString().slice(0, 10);
+        
+        updateResumen();
+    });
+    
+    // Seleccionar/deseleccionar todos
+    document.getElementById('selectAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.empleado-check');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateResumen();
+    });
+    
+    document.getElementById('masterCheck').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.empleado-check');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        document.getElementById('selectAll').checked = this.checked;
+        updateResumen();
+    });
+    
+    // Event listeners para checkboxes individuales
+    document.querySelectorAll('.empleado-check').forEach(checkbox => {
+        checkbox.addEventListener('change', updateResumen);
+    });
+    
+    // Event listeners para inputs de bonificaciones y deducciones
+    document.querySelectorAll('.bonificacion-input, .deduccion-input').forEach(input => {
+        input.addEventListener('input', function() {
+            updateRowTotal(this);
+            updateResumen();
+        });
+    });
+    
+    // Actualizar total de una fila
+    function updateRowTotal(input) {
+        const row = input.closest('tr');
+        const salarioBase = parseFloat(row.cells[3].textContent.replace('$', '').replace(',', '')) || 0;
+        const bonificacion = parseFloat(row.querySelector('.bonificacion-input').value) || 0;
+        const deduccion = parseFloat(row.querySelector('.deduccion-input').value) || 0;
+        
+        const total = salarioBase + bonificacion - deduccion;
+        const totalCell = row.querySelector('.total-estimado strong');
+        totalCell.textContent = '$' + total.toFixed(2);
+    }
+    
+    // Actualizar resumen general
+    function updateResumen() {
+        const selectedCheckboxes = document.querySelectorAll('.empleado-check:checked');
+        let totalEmpleados = 0;
+        let totalSalarios = 0;
+        let totalBonificaciones = 0;
+        let totalDeducciones = 0;
+        
+        selectedCheckboxes.forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            const salarioBase = parseFloat(row.cells[3].textContent.replace('$', '').replace(',', '')) || 0;
+            const bonificacion = parseFloat(row.querySelector('.bonificacion-input').value) || 0;
+            const deduccion = parseFloat(row.querySelector('.deduccion-input').value) || 0;
+            
+            totalEmpleados++;
+            totalSalarios += salarioBase;
+            totalBonificaciones += bonificacion;
+            totalDeducciones += deduccion;
+        });
+        
+        const totalNeto = totalSalarios + totalBonificaciones - totalDeducciones;
+        
+        document.getElementById('empleadosSeleccionados').textContent = totalEmpleados;
+        document.getElementById('totalSalarios').textContent = '$' + totalSalarios.toFixed(2);
+        document.getElementById('totalBonificaciones').textContent = '$' + totalBonificaciones.toFixed(2);
+        document.getElementById('totalDeducciones').textContent = '$' + totalDeducciones.toFixed(2);
+        document.getElementById('totalNeto').textContent = '$' + totalNeto.toFixed(2);
+    }
+    
+    // Vista previa de nómina
+    function previewNomina() {
+        const selectedCheckboxes = document.querySelectorAll('.empleado-check:checked');
+        
+        if (selectedCheckboxes.length === 0) {
+            alert('Debe seleccionar al menos un empleado');
+            return;
+        }
+        
+        const periodo = document.getElementById('periodo').value;
+        const tipoNomina = document.getElementById('tipo_nomina').value;
+        const fechaPago = document.getElementById('fecha_pago').value;
+        
+        if (!periodo || !tipoNomina || !fechaPago) {
+            alert('Complete todos los campos obligatorios');
+            return;
+        }
+        
+        let previewHTML = `
+            <div class="text-center mb-4">
+                <h4>Vista Previa de Nómina</h4>
+                <p><strong>Período:</strong> ${periodo} | <strong>Tipo:</strong> ${tipoNomina} | <strong>Fecha de Pago:</strong> ${fechaPago}</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Empleado</th>
+                            <th>Cargo</th>
+                            <th>Salario Base</th>
+                            <th>Bonificaciones</th>
+                            <th>Deducciones</th>
+                            <th>Total Neto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        let totalGeneral = 0;
+        
+        selectedCheckboxes.forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            const empleado = row.cells[1].textContent.trim();
+            const cargo = row.cells[2].textContent.trim();
+            const salarioBase = parseFloat(row.cells[3].textContent.replace('$', '').replace(',', '')) || 0;
+            const bonificacion = parseFloat(row.querySelector('.bonificacion-input').value) || 0;
+            const deduccion = parseFloat(row.querySelector('.deduccion-input').value) || 0;
+            const totalNeto = salarioBase + bonificacion - deduccion;
+            
+            totalGeneral += totalNeto;
+            
+            previewHTML += `
+                <tr>
+                    <td>${empleado}</td>
+                    <td>${cargo}</td>
+                    <td>$${salarioBase.toFixed(2)}</td>
+                    <td class="text-success">$${bonificacion.toFixed(2)}</td>
+                    <td class="text-danger">$${deduccion.toFixed(2)}</td>
+                    <td><strong>$${totalNeto.toFixed(2)}</strong></td>
+                </tr>
+            `;
+        });
+        
+        previewHTML += `
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="5" class="text-end">Total General:</th>
+                            <th class="text-primary">$${totalGeneral.toFixed(2)}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        `;
+        
+        document.getElementById('previewContent').innerHTML = previewHTML;
+        new bootstrap.Modal(document.getElementById('previewModal')).show();
+    }
+    
+    // Imprimir vista previa
+    function printPreview() {
+        const printContent = document.getElementById('previewContent').innerHTML;
+        const originalContent = document.body.innerHTML;
+        document.body.innerHTML = printContent;
+        window.print();
+        document.body.innerHTML = originalContent;
+    }
+    
+    // Validación del formulario
+    document.getElementById('nominaForm').addEventListener('submit', function(e) {
+        const selectedCheckboxes = document.querySelectorAll('.empleado-check:checked');
+        
+        if (selectedCheckboxes.length === 0) {
+            e.preventDefault();
+            alert('Debe seleccionar al least un empleado para generar la nómina');
+            return;
+        }
+        
+        if (confirm('¿Está seguro de generar esta nómina? Esta acción no se puede deshacer.')) {
+            // Mostrar indicador de carga
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generando...';
+            submitBtn.disabled = true;
+        } else {
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

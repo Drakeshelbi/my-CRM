@@ -1,0 +1,208 @@
+<!-- templates/remision_form.html -->
+{% extends "base.html" %}
+
+{% block title %}{% if remision %}Editar{% else %}Nueva{% endif %} Remisión - ERP Empresarial{% endblock %}
+{% block page_title %}{% if remision %}Editar{% else %}Nueva{% endif %} Remisión{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-truck me-2"></i>
+                    {% if remision %}Editar Remisión{% else %}Nueva Remisión{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="remisionForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cliente_id" class="form-label">Cliente *</label>
+                                <select class="form-select" id="cliente_id" name="cliente_id" required>
+                                    <option value="">Seleccionar cliente...</option>
+                                    {% for cliente in clientes %}
+                                        <option value="{{ cliente[0] }}" 
+                                            {% if remision and cliente[0] == remision.cliente_id %}selected{% endif %}>
+                                            {{ cliente[1] }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fecha" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" id="fecha" name="fecha" 
+                                       value="{% if remision %}{{ remision.fecha.strftime('%Y-%m-%d') if remision.fecha else '' }}{% else %}{{ moment().format('YYYY-MM-DD') }}{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="destino" class="form-label">Destino</label>
+                                <input type="text" class="form-control" id="destino" name="destino" 
+                                       value="{{ remision.destino if remision else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="transportista" class="form-label">Transportista</label>
+                                <input type="text" class="form-control" id="transportista" name="transportista" 
+                                       value="{{ remision.transportista if remision else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6>Artículos de la Remisión</h6>
+                    
+                    <div id="items-container">
+                        <div class="item-row mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Descripción del Artículo</label>
+                                    <input type="text" class="form-control" name="item[]" placeholder="Descripción del producto/servicio">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Cantidad</label>
+                                    <input type="number" class="form-control" name="cantidad[]" min="1" step="0.01" placeholder="1">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Unidad</label>
+                                    <select class="form-select" name="unidad[]">
+                                        <option value="pza">Pieza</option>
+                                        <option value="kg">Kilogramo</option>
+                                        <option value="lt">Litro</option>
+                                        <option value="mt">Metro</option>
+                                        <option value="caja">Caja</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger btn-sm remove-item" style="display: none;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-primary" id="add-item">
+                            <i class="fas fa-plus me-2"></i>
+                            Agregar Artículo
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3" 
+                                  placeholder="Observaciones adicionales...">{{ remision.observaciones if remision else '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/remisiones" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if remision %}Actualizar{% else %}Crear{% endif %} Remisión
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addItemBtn = document.getElementById('add-item');
+    const itemsContainer = document.getElementById('items-container');
+
+    addItemBtn.addEventListener('click', function() {
+        const newItem = document.createElement('div');
+        newItem.className = 'item-row mb-3';
+        newItem.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="item[]" placeholder="Descripción del producto/servicio">
+                </div>
+                <div class="col-md-3">
+                    <input type="number" class="form-control" name="cantidad[]" min="1" step="0.01" placeholder="1">
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="unidad[]">
+                        <option value="pza">Pieza</option>
+                        <option value="kg">Kilogramo</option>
+                        <option value="lt">Litro</option>
+                        <option value="mt">Metro</option>
+                        <option value="caja">Caja</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm remove-item">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        itemsContainer.appendChild(newItem);
+        updateRemoveButtons();
+    });
+
+    // Delegar evento para botones de eliminar
+    itemsContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-item') || e.target.closest('.remove-item')) {
+            const itemRow = e.target.closest('.item-row');
+            itemRow.remove();
+            updateRemoveButtons();
+        }
+    });
+
+    function updateRemoveButtons() {
+        const removeButtons = document.querySelectorAll('.remove-item');
+        const itemRows = document.querySelectorAll('.item-row');
+        
+        removeButtons.forEach(btn => {
+            btn.style.display = itemRows.length > 1 ? 'block' : 'none';
+        });
+    }
+
+    // Inicializar
+    updateRemoveButtons();
+
+    // Validación del formulario
+    document.getElementById('remisionForm').addEventListener('submit', function(e) {
+        const clienteId = document.getElementById('cliente_id').value;
+        const items = document.querySelectorAll('input[name="item[]"]');
+        let hasValidItem = false;
+
+        items.forEach(item => {
+            if (item.value.trim() !== '') {
+                hasValidItem = true;
+            }
+        });
+
+        if (!clienteId) {
+            e.preventDefault();
+            alert('Por favor selecciona un cliente');
+            return;
+        }
+
+        if (!hasValidItem) {
+            e.preventDefault();
+            alert('Por favor agrega al menos un artículo a la remisión');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

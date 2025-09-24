@@ -1,0 +1,123 @@
+<!-- templates/remisiones.html -->
+{% extends "base.html" %}
+
+{% block title %}Remisiones - ERP Empresarial{% endblock %}
+{% block page_title %}Gestión de Remisiones{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-truck me-2"></i>
+        Remisiones
+    </h2>
+    <a href="/remisiones/nueva" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>
+        Nueva Remisión
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Lista de Remisiones</h5>
+    </div>
+    <div class="card-body">
+        {% if remisiones %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Número</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for remision in remisiones %}
+                        <tr>
+                            <td>
+                                <strong>#{{ remision[1] }}</strong>
+                            </td>
+                            <td>{{ remision[2] }}</td>
+                            <td>{{ remision[3].strftime('%d/%m/%Y') if remision[3] else '' }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'warning' if remision[4] == 'pendiente' else 'success' if remision[4] == 'entregada' else 'secondary' }}">
+                                    {{ remision[4].title() }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="/remisiones/{{ remision[0] }}/ver" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/remisiones/{{ remision[0] }}/editar" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="/remisiones/{{ remision[0] }}/pdf" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No hay remisiones registradas</h5>
+                <p class="text-muted">Crea tu primera remisión haciendo clic en el botón "Nueva Remisión"</p>
+                <a href="/remisiones/nueva" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Crear Primera Remisión
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ remisiones|selectattr('4', 'equalto', 'pendiente')|list|length }}</h4>
+                        <p class="mb-0">Pendientes</p>
+                    </div>
+                    <i class="fas fa-clock fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ remisiones|selectattr('4', 'equalto', 'entregada')|list|length }}</h4>
+                        <p class="mb-0">Entregadas</p>
+                    </div>
+                    <i class="fas fa-check fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ remisiones|length }}</h4>
+                        <p class="mb-0">Total Remisiones</p>
+                    </div>
+                    <i class="fas fa-truck fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,154 @@
+<!-- templates/clientes.html -->
+{% extends "base.html" %}
+
+{% block title %}Clientes - ERP Empresarial{% endblock %}
+{% block page_title %}Gestión de Clientes{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="fas fa-users text-primary me-2"></i>
+                Lista de Clientes
+            </h2>
+            <a href="{{ url_for('nuevo_cliente') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>
+                Nuevo Cliente
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Listado de Clientes
+                        </h5>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchCliente" placeholder="Buscar cliente...">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Dirección</th>
+                                <th>Fecha Registro</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cliente in clientes %}
+                            <tr>
+                                <td><strong>#{{ cliente[0] }}</strong></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-primary text-white me-2">
+                                            {{ cliente[1][0].upper() }}
+                                        </div>
+                                        {{ cliente[1] }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <i class="fas fa-envelope text-muted me-1"></i>
+                                    {{ cliente[2] }}
+                                </td>
+                                <td>
+                                    <i class="fas fa-phone text-muted me-1"></i>
+                                    {{ cliente[3] }}
+                                </td>
+                                <td>
+                                    <i class="fas fa-map-marker-alt text-muted me-1"></i>
+                                    {{ cliente[4][:50] }}{% if cliente[4]|length > 50 %}...{% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{ cliente[5].strftime('%d/%m/%Y') }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ url_for('editar_cliente', cliente_id=cliente[0]) }}" 
+                                           class="btn btn-outline-primary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger" 
+                                                onclick="confirmarEliminacion({{ cliente[0] }})" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-users text-muted fa-3x mb-3"></i>
+                                    <p class="text-muted">No hay clientes registrados</p>
+                                    <a href="{{ url_for('nuevo_cliente') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>
+                                        Agregar Primer Cliente
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Búsqueda en tiempo real
+document.getElementById('searchCliente').addEventListener('input', function() {
+    const searchValue = this.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchValue) ? '' : 'none';
+    });
+});
+
+function confirmarEliminacion(clienteId) {
+    if (confirm('¿Está seguro de que desea eliminar este cliente?')) {
+        // Aquí implementarías la eliminación
+        alert('Funcionalidad de eliminación por implementar');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,556 @@
+<!-- templates/factura_form.html -->
+{% extends "base.html" %}
+
+{% block title %}Nueva Factura - ERP Empresarial{% endblock %}
+{% block page_title %}Nueva Factura{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    Crear Nueva Factura
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="facturaForm">
+                    <!-- Información de la factura -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Información de Factura
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="cliente_id" class="form-label">Cliente *</label>
+                                        <select class="form-select" id="cliente_id" name="cliente_id" required>
+                                            <option value="">Seleccionar cliente...</option>
+                                            {% for cliente in clientes %}
+                                            <option value="{{ cliente[0] }}">{{ cliente[1] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="fecha" class="form-label">Fecha</label>
+                                        <input type="date" class="form-control" id="fecha" name="fecha" 
+                                               value="{{ date.today() }}" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="forma_pago" class="form-label">Forma de Pago</label>
+                                        <select class="form-select" id="forma_pago" name="forma_pago">
+                                            <option value="efectivo">Efectivo</option>
+                                            <option value="transferencia">Transferencia</option>
+                                            <option value="tarjeta">Tarjeta</option>
+                                            <option value="credito">Crédito</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="observaciones" class="form-label">Observaciones</label>
+                                        <textarea class="form-control" id="observaciones" name="observaciones" 
+                                                rows="3" placeholder="Observaciones adicionales..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user me-2"></i>
+                                        Información del Cliente
+                                    </h6>
+                                </div>
+                                <div class="card-body" id="clienteInfo">
+                                    <div class="text-muted text-center py-4">
+                                        <i class="fas fa-user-plus fa-2x mb-2"></i>
+                                        <p>Selecciona un cliente para ver su información</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items de la factura -->
+                    <div class="card border-warning mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-list me-2"></i>
+                                    Items de la Factura
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-dark" onclick="agregarItem()">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Agregar Item
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="40%">Descripción</th>
+                                            <th width="15%">Cantidad</th>
+                                            <th width="20%">Precio Unitario</th>
+                                            <th width="20%">Subtotal</th>
+                                            <th width="5%">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itemsTable">
+                                        <tr>
+                                            <td>
+                                                <input type="text" class="form-control" name="item[]" 
+                                                       placeholder="Descripción del producto/servicio" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control cantidad" name="cantidad[]" 
+                                                       min="1" step="0.01" value="1" required>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control precio" name="precio[]" 
+                                                       min="0" step="0.01" placeholder="0.00" required>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control subtotal" readonly value="0.00">
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarItem(this)">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Totales -->
+                    <div class="row mb-4">
+                        <div class="col-md-8"></div>
+                        <div class="col-md-4">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        Totales
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-6">
+                                            <strong>Subtotal:</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span id="subtotalGeneral">$0.00</span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-6">
+                                            <label for="impuesto">Impuesto (%):</label>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="number" class="form-control form-control-sm" 
+                                                   id="impuesto" name="impuesto" min="0" max="100" 
+                                                   step="0.01" value="16" onchange="calcularTotal()">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-6">
+                                            <strong>Impuesto:</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span id="montoImpuesto">$0.00</span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-6">
+                                            <label for="descuento">Descuento:</label>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="number" class="form-control form-control-sm" 
+                                                   id="descuento" name="descuento" min="0" 
+                                                   step="0.01" value="0" onchange="calcularTotal()">
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong class="fs-5">TOTAL:</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <strong class="fs-5 text-success" id="totalGeneral">$0.00</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('facturas') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Volver
+                        </a>
+                        <div>
+                            <button type="button" class="btn btn-outline-info me-2" onclick="previsualizarFactura()">
+                                <i class="fas fa-eye me-2"></i>
+                                Previsualizar
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>
+                                Guardar Factura
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Previsualización -->
+<div class="modal fade" id="previsualizacionModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye me-2"></i>
+                    Previsualización de Factura
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="previsualizacionContent">
+                <!-- Contenido de previsualización -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="imprimirPreview()">
+                    <i class="fas fa-print me-2"></i>
+                    Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Información de clientes (simulada - en producción vendría del servidor)
+const clientesInfo = {
+    {% for cliente in clientes %}
+    {{ cliente[0] }}: {
+        nombre: "{{ cliente[1] }}",
+        email: "cliente{{ cliente[0] }}@email.com",
+        telefono: "555-0{{ cliente[0] }}00",
+        direccion: "Dirección del cliente {{ cliente[1] }}"
+    },
+    {% endfor %}
+};
+
+// Mostrar información del cliente seleccionado
+document.getElementById('cliente_id').addEventListener('change', function() {
+    const clienteId = this.value;
+    const infoDiv = document.getElementById('clienteInfo');
+    
+    if (clienteId && clientesInfo[clienteId]) {
+        const cliente = clientesInfo[clienteId];
+        infoDiv.innerHTML = `
+            <div class="row">
+                <div class="col-12">
+                    <h6 class="text-primary">${cliente.nombre}</h6>
+                    <p class="mb-1"><i class="fas fa-envelope me-2"></i>${cliente.email}</p>
+                    <p class="mb-1"><i class="fas fa-phone me-2"></i>${cliente.telefono}</p>
+                    <p class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>${cliente.direccion}</p>
+                </div>
+            </div>
+        `;
+    } else {
+        infoDiv.innerHTML = `
+            <div class="text-muted text-center py-4">
+                <i class="fas fa-user-plus fa-2x mb-2"></i>
+                <p>Selecciona un cliente para ver su información</p>
+            </div>
+        `;
+    }
+});
+
+// Agregar nuevo item
+function agregarItem() {
+    const tbody = document.getElementById('itemsTable');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td>
+            <input type="text" class="form-control" name="item[]" 
+                   placeholder="Descripción del producto/servicio" required>
+        </td>
+        <td>
+            <input type="number" class="form-control cantidad" name="cantidad[]" 
+                   min="1" step="0.01" value="1" required>
+        </td>
+        <td>
+            <input type="number" class="form-control precio" name="precio[]" 
+                   min="0" step="0.01" placeholder="0.00" required>
+        </td>
+        <td>
+            <input type="text" class="form-control subtotal" readonly value="0.00">
+        </td>
+        <td>
+            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarItem(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    // Agregar event listeners para los nuevos campos
+    agregarEventListeners(newRow);
+}
+
+// Eliminar item
+function eliminarItem(button) {
+    const tbody = document.getElementById('itemsTable');
+    if (tbody.rows.length > 1) {
+        button.closest('tr').remove();
+        calcularTotal();
+    } else {
+        alert('Debe mantener al menos un item en la factura');
+    }
+}
+
+// Agregar event listeners para cálculos automáticos
+function agregarEventListeners(row) {
+    const cantidad = row.querySelector('.cantidad');
+    const precio = row.querySelector('.precio');
+    
+    cantidad.addEventListener('input', calcularSubtotal);
+    precio.addEventListener('input', calcularSubtotal);
+}
+
+// Calcular subtotal de una fila
+function calcularSubtotal(event) {
+    const row = event.target.closest('tr');
+    const cantidad = parseFloat(row.querySelector('.cantidad').value) || 0;
+    const precio = parseFloat(row.querySelector('.precio').value) || 0;
+    const subtotal = cantidad * precio;
+    
+    row.querySelector('.subtotal').value = subtotal.toFixed(2);
+    calcularTotal();
+}
+
+// Calcular total general
+function calcularTotal() {
+    const subtotales = document.querySelectorAll('.subtotal');
+    let subtotalGeneral = 0;
+    
+    subtotales.forEach(subtotal => {
+        subtotalGeneral += parseFloat(subtotal.value) || 0;
+    });
+    
+    const impuestoPorcentaje = parseFloat(document.getElementById('impuesto').value) || 0;
+    const descuento = parseFloat(document.getElementById('descuento').value) || 0;
+    
+    const montoImpuesto = (subtotalGeneral * impuestoPorcentaje) / 100;
+    const totalGeneral = subtotalGeneral + montoImpuesto - descuento;
+    
+    document.getElementById('subtotalGeneral').textContent = `$${subtotalGeneral.toFixed(2)}`;
+    document.getElementById('montoImpuesto').textContent = `$${montoImpuesto.toFixed(2)}`;
+    document.getElementById('totalGeneral').textContent = `$${totalGeneral.toFixed(2)}`;
+}
+
+// Previsualizar factura
+function previsualizarFactura() {
+    const clienteId = document.getElementById('cliente_id').value;
+    const cliente = clientesInfo[clienteId];
+    
+    if (!clienteId) {
+        alert('Por favor selecciona un cliente');
+        return;
+    }
+    
+    const items = [];
+    const rows = document.querySelectorAll('#itemsTable tr');
+    
+    rows.forEach(row => {
+        const item = row.querySelector('input[name="item[]"]').value;
+        const cantidad = row.querySelector('.cantidad').value;
+        const precio = row.querySelector('.precio').value;
+        const subtotal = row.querySelector('.subtotal').value;
+        
+        if (item && cantidad && precio) {
+            items.push({ item, cantidad, precio, subtotal });
+        }
+    });
+    
+    if (items.length === 0) {
+        alert('Agrega al menos un item a la factura');
+        return;
+    }
+    
+    const fecha = new Date().toLocaleDateString('es-MX');
+    const numeroFactura = Math.floor(Math.random() * 10000) + 1;
+    
+    let itemsHtml = '';
+    items.forEach(item => {
+        itemsHtml += `
+            <tr>
+                <td>${item.item}</td>
+                <td>${item.cantidad}</td>
+                <td>$${parseFloat(item.precio).toFixed(2)}</td>
+                <td>$${parseFloat(item.subtotal).toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    const previewContent = `
+        <div class="invoice-preview">
+            <div class="text-center mb-4">
+                <h2 class="text-primary">FACTURA</h2>
+                <h4>#${numeroFactura}</h4>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Empresa:</h5>
+                    <p><strong>ERP Empresarial</strong><br>
+                    Calle Principal #123<br>
+                    Ciudad, Estado<br>
+                    Tel: (555) 123-4567</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h5>Cliente:</h5>
+                    <p><strong>${cliente.nombre}</strong><br>
+                    ${cliente.direccion}<br>
+                    ${cliente.telefono}<br>
+                    ${cliente.email}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Fecha:</strong> ${fecha}</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p><strong>Forma de Pago:</strong> ${document.getElementById('forma_pago').value}</p>
+                </div>
+            </div>
+            
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHtml}
+                </tbody>
+            </table>
+            
+            <div class="row">
+                <div class="col-md-8"></div>
+                <div class="col-md-4">
+                    <table class="table">
+                        <tr>
+                            <td><strong>Subtotal:</strong></td>
+                            <td class="text-end">${document.getElementById('subtotalGeneral').textContent}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Impuesto:</strong></td>
+                            <td class="text-end">${document.getElementById('montoImpuesto').textContent}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Descuento:</strong></td>
+                            <td class="text-end">$${parseFloat(document.getElementById('descuento').value || 0).toFixed(2)}</td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>TOTAL:</strong></td>
+                            <td class="text-end"><strong>${document.getElementById('totalGeneral').textContent}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            ${document.getElementById('observaciones').value ? `
+                <div class="mt-4">
+                    <h6>Observaciones:</h6>
+                    <p>${document.getElementById('observaciones').value}</p>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    document.getElementById('previsualizacionContent').innerHTML = previewContent;
+    const modal = new bootstrap.Modal(document.getElementById('previsualizacionModal'));
+    modal.show();
+}
+
+// Imprimir previsualización
+function imprimirPreview() {
+    const content = document.getElementById('previsualizacionContent').innerHTML;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Factura</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    @media print {
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container mt-4">
+                    ${content}
+                </div>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Validar formulario antes de enviar
+document.getElementById('facturaForm').addEventListener('submit', function(e) {
+    const clienteId = document.getElementById('cliente_id').value;
+    const items = document.querySelectorAll('input[name="item[]"]');
+    let hasItems = false;
+    
+    items.forEach(item => {
+        if (item.value.trim()) hasItems = true;
+    });
+    
+    if (!clienteId) {
+        e.preventDefault();
+        alert('Por favor selecciona un cliente');
+        return;
+    }
+    
+    if (!hasItems) {
+        e.preventDefault();
+        alert('Agrega al menos un item a la factura');
+        return;
+    }
+});
+
+// Inicializar event listeners para la primera fila
+document.addEventListener('DOMContentLoaded', function() {
+    const firstRow = document.querySelector('#itemsTable tr');
+    agregarEventListeners(firstRow);
+    
+    // Establecer fecha actual
+    document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

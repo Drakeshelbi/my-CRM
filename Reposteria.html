@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dulce Arte - Repostería Premium</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            transform: translateY(-2px);
+            text-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
+        }
+
+        .cart-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .cart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #feca57;
+            color: #333;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            z-index: 2;
+            max-width: 800px;
+            padding: 0 2rem;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite 0.5s;
+        }
+
+        .cta-btn {
+            background: linear-gradient(45deg, #feca57, #ff9ff3);
+            color: #333;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 15px 40px rgba(254, 202, 87, 0.3);
+            transition: all 0.3s ease;
+            animation: float 3s ease-in-out infinite 1s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(254, 202, 87, 0.4);
+        }
+
+        /* Floating shapes */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            animation: floatShape 6s ease-in-out infinite;
+        }
+
+        .shape1 {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape2 {
+            width: 150px;
+            height: 150px;
+            background: rgba(254, 202, 87, 0.2);
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .shape3 {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 107, 107, 0.2);
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        /* Products Section */
+        .products {
+            padding: 8rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 4rem;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .product-card:hover::before {
+            left: 100%;
+        }
+
+        .product-image {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .product-card:hover .product-image {
+            transform: rotateY(180deg);
+        }
+
+        .product-name {
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .product-description {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .product-price {
+            font-size: 2rem;
+            color: #feca57;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(254, 202, 87, 0.5);
+        }
+
+        .add-to-cart {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .add-to-cart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+        }
+
+        /* Cart Modal */
+        .cart-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .cart-title {
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-cart:hover {
+            transform: rotate(90deg);
+            color: #ff6b6b;
+        }
+
+        .cart-items {
+            margin-bottom: 2rem;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .cart-total {
+            font-size: 1.5rem;
+            color: #feca57;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #feca57, #ff9ff3);
+            color: #333;
+            border: none;
+            padding: 1rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(254, 202, 87, 0.4);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes floatShape {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(120deg); }
+            66% { transform: translateY(30px) rotate(240deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            .nav {
+                padding: 0 1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .products {
+                padding: 6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">🍰 Dulce Arte</div>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#productos">Productos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+            <button class="cart-btn" onclick="toggleCart()">
+                🛒 Carrito
+                <span class="cart-count" id="cartCount">0</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+        <div class="shape shape3"></div>
+        
+        <div class="hero-content">
+            <h1>Dulce Arte Repostería</h1>
+            <p>Creamos momentos dulces con nuestras delicias artesanales</p>
+            <button class="cta-btn" onclick="document.getElementById('productos').scrollIntoView({behavior: 'smooth'})">
+                Explorar Productos
+            </button>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products" id="productos">
+        <h2 class="section-title">Nuestros Productos</h2>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-image">🎂</div>
+                <h3 class="product-name">Torta de Chocolate</h3>
+                <p class="product-description">Deliciosa torta de chocolate con capas esponjosas y crema de chocolate belga.</p>
+                <div class="product-price">$45.00</div>
+                <button class="add-to-cart" onclick="addToCart('Torta de Chocolate', 45.00, '🎂')">
+                    Agregar al Carrito
+                </button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">🧁</div>
+                <h3 class="product-name">Cupcakes Premium</h3>
+                <p class="product-description">Set de 6 cupcakes gourmet con diferentes sabores y decoraciones únicas.</p>
+                <div class="product-price">$28.00</div>
+                <button class="add-to-cart" onclick="addToCart('Cupcakes Premium', 28.00, '🧁')">
+                    Agregar al Carrito
+                </button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">🍰</div>
+                <h3 class="product-name">Cheesecake de Fresa</h3>
+                <p class="product-description">Cremoso cheesecake con base de galleta y fresas frescas de temporada.</p>
+                <div class="product-price">$38.00</div>
+                <button class="add-to-cart" onclick="addToCart('Cheesecake de Fresa', 38.00, '🍰')">
+                    Agregar al Carrito
+                </button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">🥧</div>
+                <h3 class="product-name">Pie de Manzana</h3>
+                <p class="product-description">Tradicional pie de manzana con canela y masa crujiente horneada al momento.</p>
+                <div class="product-price">$32.00</div>
+                <button class="add-to-cart" onclick="addToCart('Pie de Manzana', 32.00, '🥧')">
+                    Agregar al Carrito
+                </button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">🍪</div>
+                <h3 class="product-name">Cookies Artesanales</h3>
+                <p class="product-description">Docena de cookies caseras con chispas de chocolate y nueces.</p>
+                <div class="product-price">$18.00</div>
+                <button class="add-to-cart" onclick="addToCart('Cookies Artesanales', 18.00, '🍪')">
+                    Agregar al Carrito
+                </button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">🍩</div>
+                <h3 class="product-name">Donas Glaseadas</h3>
+                <p class="product-description">Set de 8 donas frescas con diferentes tipos de glaseado y toppings.</p>
+                <div class="product-price">$22.00</div>
+                <button class="add-to-cart" onclick="addToCart('Donas Glaseadas', 22.00, '🍩')">
+                    Agregar al Carrito
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Modal -->
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-content">
+            <div class="cart-header">
+                <h3 class="cart-title">Tu Carrito</h3>
+                <button class="close-cart" onclick="toggleCart()">×</button>
+            </div>
+            <div class="cart-items" id="cartItems">
+                <p style="color: rgba(255,255,255,0.7); text-align: center;">Tu carrito está vacío</p>
+            </div>
+            <div class="cart-total" id="cartTotal">Total: $0.00</div>
+            <button class="checkout-btn" onclick="checkout()">Proceder al Pago</button>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+        let total = 0;
+
+        function addToCart(name, price, emoji) {
+            const existingItem = cart.find(item => item.name === name);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    name: name,
+                    price: price,
+                    emoji: emoji,
+                    quantity: 1
+                });
+            }
+            
+            updateCartDisplay();
+            
+            // Animation feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '¡Agregado!';
+            button.style.background = 'linear-gradient(45deg, #2ed573, #7bed9f)';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = 'linear-gradient(45deg, #ff6b6b, #ee5a24)';
+            }, 1000);
+        }
+
+        function removeFromCart(name) {
+            const itemIndex = cart.findIndex(item => item.name === name);
+            if (itemIndex > -1) {
+                cart.splice(itemIndex, 1);
+                updateCartDisplay();
+            }
+        }
+
+        function updateQuantity(name, change) {
+            const item = cart.find(item => item.name === name);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(name);
+                } else {
+                    updateCartDisplay();
+                }
+            }
+        }
+
+        function updateCartDisplay() {
+            const cartCount = document.getElementById('cartCount');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            cartCount.textContent = totalItems;
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p style="color: rgba(255,255,255,0.7); text-align: center;">Tu carrito está vacío</p>';
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <div>
+                            <span>${item.emoji} ${item.name}</span>
+                            <div style="font-size: 0.9rem; opacity: 0.8;">$${item.price.toFixed(2)} cada uno</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button onclick="updateQuantity('${item.name}', -1)" style="background: #ff6b6b; color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer;">-</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="updateQuantity('${item.name}', 1)" style="background: #2ed573; color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer;">+</button>
+                            <button onclick="removeFromCart('${item.name}')" style="background: #ff4757; color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        function toggleCart() {
+            const cartModal = document.getElementById('cartModal');
+            cartModal.style.display = cartModal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert('Tu carrito está vacío');
+                return;
+            }
+            
+            alert(`¡Gracias por tu compra! Total: $${total.toFixed(2)}\n\nEn breve te contactaremos para coordinar la entrega.`);
+            cart = [];
+            total = 0;
+            updateCartDisplay();
+            toggleCart();
+        }
+
+        // Close cart when clicking outside
+        document.getElementById('cartModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleCart();
+            }
+        });
+
+        // Scroll effect for header
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(255, 255, 255, 0.15)';
+            } else {
+                header.style.background = 'rgba(255, 255, 255, 0.1)';
+            }
+        });
+    </script>
+</body>
+</html>

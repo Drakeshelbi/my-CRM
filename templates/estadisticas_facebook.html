@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+
+{% block title %}Estadísticas - {{ campania.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .estadistica-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .estadistica-valor {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .estadistica-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    .progress-bar {
+        height: 20px;
+        background-color: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        transition: width 0.3s ease;
+    }
+    
+    .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .metric-row:last-child {
+        border-bottom: none;
+    }
+    
+    .metric-label {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .metric-value {
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .status-badge {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .status-activa { background-color: #d4edda; color: #155724; }
+    .status-pausada { background-color: #fff3cd; color: #856404; }
+    .status-finalizada { background-color: #f8d7da; color: #721c24; }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn-facebook {
+        background: linear-gradient(135deg, #1877f2, #42a5f5);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-facebook:hover {
+        background: linear-gradient(135deg, #166fe5, #1976d2);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+    
+    .sync-info {
+        background-color: #e3f2fd;
+        border: 1px solid #2196f3;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+    }
+    
+    .sync-info i {
+        color: #2196f3;
+        margin-right: 8px;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-spinner {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header de la campaña -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fab fa-facebook-f text-primary"></i>
+                        {{ campania.nombre }}
+                    </h2>
+                    <p class="text-muted mb-0">{{ campania.descripcion }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="status-badge status-{{ campania.estado }}">
+                        {{ campania.estado|title }}
+                    </span>
+                    <div class="mt-2">
+                        <small class="text-muted">ID de Campaña: {{ campania.campaign_id }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if estadisticas %}
+    <!-- Tarjetas de estadísticas principales -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="estadistica-card">
+                <div class="estadistica-valor">{{ "{:,}".format(estadisticas.impresiones or 0) }}</div>
+                <div class="estadistica-label">
+                    <i class="fas fa-eye"></i> Impresiones
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="estadistica-card">
+                <div class="estadistica-valor">{{ "{:,}".format(estadisticas.clics or 0) }}</div>
+                <div class="estadistica-label">
+                    <i class="fas fa-mouse-pointer"></i> Clics
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="estadistica-card">
+                <div class="estadistica-valor">${{ "{:,.2f}".format(estadisticas.gasto or 0) }}</div>
+                <div class="estadistica-label">
+                    <i class="fas fa-dollar-sign"></i> Gasto Total
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="estadistica-card">
+                <div class="estadistica-valor">{{ "{:.2f}%".format(estadisticas.ctr or 0) }}</div>
+                <div class="estadistica-label">
+                    <i class="fas fa-chart-line"></i> CTR
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas detalladas -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="info-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-bar text-primary"></i>
+                    Métricas de Rendimiento
+                </h5>
+                
+                <div class="metric-row">
+                    <span class="metric-label">Alcance</span>
+                    <span class="metric-value">{{ "{:,}".format(estadisticas.alcance or 0) }}</span>
+                </div>
+                
+                <div class="metric-row">
+                    <span class="metric-label">Frecuencia</span>
+                    <span class="metric-value">
+                        {% if estadisticas.alcance and estadisticas.alcance > 0 %}
+                            {{ "{:.2f}".format((estadisticas.impresiones or 0) / estadisticas.alcance) }}
+                        {% else %}
+                            0.00
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="metric-row">
+                    <span class="metric-label">CPC (Costo por Clic)</span>
+                    <span class="metric-value">
+                        {% if estadisticas.clics and estadisticas.clics > 0 %}
+                            ${{ "{:.2f}".format((estadisticas.gasto or 0) / estadisticas.clics) }}
+                        {% else %}
+                            $0.00
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="metric-row">
+                    <span class="metric-label">CPM (Costo por Mil Impresiones)</span>
+                    <span class="metric-value">
+                        {% if estadisticas.impresiones and estadisticas.impresiones > 0 %}
+                            ${{ "{:.2f}".format((estadisticas.gasto or 0) / estadisticas.impresiones * 1000) }}
+                        {% else %}
+                            $0.00
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="info-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-info-circle text-primary"></i>
+                    Información de la Campaña
+                </h5>
+                
+                <div class="metric-row">
+                    <span class="metric-label">Presupuesto</span>
+                    <span class="metric-value">${{ "{:,.2f}".format(campania.presupuesto or 0) }}</span>
+                </div>
+                
+                <div class="metric-row">
+                    <span class="metric-label">Fecha de Inicio</span>
+                    <span class="metric-value">{{ moment(campania.fecha_inicio).format('DD/MM/YYYY') }}</span>
+                </div>
+                
+                <div class="metric-row">
+                    <span class="metric-label">Presupuesto Utilizado</span>
+                    <span class="metric-value">
+                        {% if campania.presupuesto and campania.presupuesto > 0 %}
+                            {{ "{:.1f}%".format((estadisticas.gasto or 0) / campania.presupuesto * 100) }}
+                        {% else %}
+                            0.0%
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- Barra de progreso del presupuesto -->
+                <div class="mt-3">
+                    <label class="metric-label">Progreso del Presupuesto</label>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {% if campania.presupuesto and campania.presupuesto > 0 %}{{ ((estadisticas.gasto or 0) / campania.presupuesto * 100)|round(1) }}{% else %}0{% endif %}%"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-row">
+                    <span class="metric-label">Última Actualización</span>
+                    <span class="metric-value">
+                        {% if estadisticas.fecha_actualizacion %}
+                            {{ moment(estadisticas.fecha_actualizacion).fromNow() }}
+                        {% else %}
+                            No disponible
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de sincronización -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="sync-info">
+                <i class="fas fa-sync-alt"></i>
+                <strong>Sincronización:</strong>
+                Las estadísticas se actualizan automáticamente cada hora. 
+                Última sincronización: {{ moment(estadisticas.fecha_actualizacion).format('DD/MM/YYYY HH:mm') }}
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Sin estadísticas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="info-card no-data">
+                <i class="fas fa-chart-line fa-3x mb-3 text-muted"></i>
+                <h4>Sin Estadísticas Disponibles</h4>
+                <p class="mb-4">
+                    No hay estadísticas disponibles para esta campaña. 
+                    Esto puede deberse a que la campaña es muy reciente o no se han sincronizado los datos.
+                </p>
+                <button class="btn btn-primary" onclick="sincronizarEstadisticas()">
+                    <i class="fas fa-sync-alt"></i>
+                    Sincronizar Ahora
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Botones de acción -->
+    <div class="row">
+        <div class="col-12">
+            <div class="info-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-cogs text-primary"></i>
+                    Acciones de Campaña
+                </h5>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="cambiarEstadoCampania('ACTIVE')">
+                        <i class="fas fa-play"></i>
+                        Activar Campaña
+                    </button>
+                    
+                    <button class="btn btn-warning" onclick="cambiarEstadoCampania('PAUSED')">
+                        <i class="fas fa-pause"></i>
+                        Pausar Campaña
+                    </button>
+                    
+                    <button class="btn btn-info" onclick="sincronizarEstadisticas()">
+                        <i class="fas fa-sync-alt"></i>
+                        Sincronizar Datos
+                    </button>
+                    
+                    <a href="{{ url_for('campanias_facebook') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver a Campañas
+                    </a>
+                    
+                    <a href="https://business.facebook.com/adsmanager" target="_blank" class="btn-facebook">
+                        <i class="fab fa-facebook-f"></i>
+                        Ver en Facebook
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Procesando...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function mostrarLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function ocultarLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+function sincronizarEstadisticas() {
+    mostrarLoading();
+    
+    fetch('/api/facebook/sincronizar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        ocultarLoading();
+        if (data.success) {
+            Swal.fire({
+                title: '¡Éxito!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.message || 'Error al sincronizar estadísticas',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    })
+    .catch(error => {
+        ocultarLoading();
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Error',
+            text: 'Error de conexión al sincronizar',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+}
+
+function cambiarEstadoCampania(nuevoEstado) {
+    const estadoTexto = nuevoEstado === 'ACTIVE' ? 'activar' : 'pausar';
+    
+    Swal.fire({
+        title: `¿Confirmar ${estadoTexto} campaña?`,
+        text: `Esta acción ${estadoTexto}á la campaña en Facebook`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: `Sí, ${estadoTexto}`,
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: nuevoEstado === 'ACTIVE' ? '#28a745' : '#ffc107'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            mostrarLoading();
+            
+            fetch(`/api/facebook/campania/{{ campania.id }}/estado`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    estado: nuevoEstado
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                ocultarLoading();
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message || 'Error al cambiar estado de la campaña',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                ocultarLoading();
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error de conexión',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
+}
+
+// Auto-sincronización cada 5 minutos si la página está activa
+let autoSyncInterval;
+
+function iniciarAutoSync() {
+    autoSyncInterval = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            sincronizarEstadisticas();
+        }
+    }, 300000); // 5 minutos
+}
+
+// Iniciar auto-sync cuando se carga la página
+document.addEventListener('DOMContentLoaded', function() {
+    iniciarAutoSync();
+});
+
+// Detener auto-sync cuando se cierra la página
+window.addEventListener('beforeunload', function() {
+    if (autoSyncInterval) {
+        clearInterval(autoSyncInterval);
+    }
+});
+</script>
+{% endblock %}

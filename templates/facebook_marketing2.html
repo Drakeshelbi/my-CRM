@@ -1,0 +1,522 @@
+<!-- templates/facebook_marketing.html -->
+{% extends "base.html" %}
+
+{% block title %}Facebook Marketing - ERP Empresarial{% endblock %}
+{% block page_title %}Facebook Marketing{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="text-primary">
+                <i class="fab fa-facebook me-2"></i>
+                Facebook Marketing
+            </h4>
+            <a href="/marketing" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Volver a Marketing
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Estado de la Conexión -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fab fa-facebook fa-3x text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-1">Estado de Conexión con Facebook</h5>
+                        <p class="text-muted mb-2">Gestiona tus campañas publicitarias de Facebook desde aquí</p>
+                        <span class="badge bg-warning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            No Conectado
+                        </span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary">
+                            <i class="fab fa-facebook me-2"></i>
+                            Conectar con Facebook
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulario de Nueva Campaña -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Crear Campaña de Facebook
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <!-- Información Básica -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Información Básica
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="titulo" class="form-label">Título de la Campaña *</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="objetivo" class="form-label">Objetivo de la Campaña *</label>
+                                <select class="form-select" id="objetivo" name="objetivo" required>
+                                    <option value="">Seleccionar objetivo</option>
+                                    <option value="BRAND_AWARENESS">Reconocimiento de marca</option>
+                                    <option value="REACH">Alcance</option>
+                                    <option value="TRAFFIC">Tráfico</option>
+                                    <option value="ENGAGEMENT">Interacción</option>
+                                    <option value="APP_INSTALLS">Instalaciones de app</option>
+                                    <option value="VIDEO_VIEWS">Reproducciones de video</option>
+                                    <option value="LEAD_GENERATION">Generación de clientes potenciales</option>
+                                    <option value="MESSAGES">Mensajes</option>
+                                    <option value="CONVERSIONS">Conversiones</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="descripcion" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Presupuesto y Programación -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-dollar-sign me-2"></i>
+                                Presupuesto y Programación
+                            </h6>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="presupuesto" class="form-label">Presupuesto Diario *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="presupuesto" name="presupuesto" step="0.01" min="1" required>
+                                </div>
+                                <div class="form-text">Mínimo $1.00 USD</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="fecha_inicio" class="form-label">Fecha de Inicio *</label>
+                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+                                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin">
+                                <div class="form-text">Opcional - Dejar vacío para campaña continua</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audiencia -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-users me-2"></i>
+                                Definición de Audiencia
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="pais" class="form-label">País *</label>
+                                <select class="form-select" id="pais" name="pais" required>
+                                    <option value="">Seleccionar país</option>
+                                    <option value="MX">México</option>
+                                    <option value="US">Estados Unidos</option>
+                                    <option value="ES">España</option>
+                                    <option value="AR">Argentina</option>
+                                    <option value="CO">Colombia</option>
+                                    <option value="PE">Perú</option>
+                                    <option value="CL">Chile</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ciudad" class="form-label">Ciudad (Opcional)</label>
+                                <input type="text" class="form-control" id="ciudad" name="ciudad" placeholder="ej. Ciudad de México">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edad_min" class="form-label">Edad Mínima</label>
+                                <input type="number" class="form-control" id="edad_min" name="edad_min" min="18" max="65" value="18">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edad_max" class="form-label">Edad Máxima</label>
+                                <input type="number" class="form-control" id="edad_max" name="edad_max" min="18" max="65" value="65">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="genero" class="form-label">Género</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="genero" id="todos" value="all" checked>
+                                        <label class="form-check-label" for="todos">Todos</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="genero" id="hombres" value="male">
+                                        <label class="form-check-label" for="hombres">Hombres</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="genero" id="mujeres" value="female">
+                                        <label class="form-check-label" for="mujeres">Mujeres</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="intereses" class="form-label">Intereses</label>
+                                <input type="text" class="form-control" id="intereses" name="intereses" placeholder="ej. tecnología, deportes, música">
+                                <div class="form-text">Separa múltiples intereses con comas</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Creativos -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-image me-2"></i>
+                                Creativos del Anuncio
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="titulo_anuncio" class="form-label">Título del Anuncio *</label>
+                                <input type="text" class="form-control" id="titulo_anuncio" name="titulo_anuncio" maxlength="25" required>
+                                <div class="form-text">Máximo 25 caracteres</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="link_destino" class="form-label">Link de Destino *</label>
+                                <input type="url" class="form-control" id="link_destino" name="link_destino" required>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="texto_principal" class="form-label">Texto Principal *</label>
+                                <textarea class="form-control" id="texto_principal" name="texto_principal" rows="3" maxlength="125" required></textarea>
+                                <div class="form-text">Máximo 125 caracteres</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="descripcion_anuncio" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="descripcion_anuncio" name="descripcion_anuncio" rows="2" maxlength="30"></textarea>
+                                <div class="form-text">Máximo 30 caracteres</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="imagen" class="form-label">Imagen del Anuncio</label>
+                                <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
+                                <div class="form-text">Formato recomendado: 1200x628px (JPG o PNG)</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="call_to_action" class="form-label">Llamada a la Acción *</label>
+                                <select class="form-select" id="call_to_action" name="call_to_action" required>
+                                    <option value="">Seleccionar CTA</option>
+                                    <option value="LEARN_MORE">Más información</option>
+                                    <option value="SHOP_NOW">Comprar ahora</option>
+                                    <option value="BOOK_TRAVEL">Reservar viaje</option>
+                                    <option value="CONTACT_US">Contáctanos</option>
+                                    <option value="DOWNLOAD">Descargar</option>
+                                    <option value="GET_QUOTE">Obtener cotización</option>
+                                    <option value="SIGN_UP">Registrarse</option>
+                                    <option value="SUBSCRIBE">Suscribirse</option>
+                                    <option value="APPLY_NOW">Solicitar ahora</option>
+                                    <option value="CALL_NOW">Llamar ahora</option>
+                                    <option value="WATCH_MORE">Ver más</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="/marketing" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>
+                                    Cancelar
+                                </a>
+                                <button type="button" class="btn btn-outline-primary" id="previewBtn">
+                                    <i class="fas fa-eye me-2"></i>
+                                    Vista Previa
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fab fa-facebook me-2"></i>
+                                    Crear Campaña
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Lateral de Ayuda -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Consejos para Facebook Ads
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary">📊 Presupuesto</h6>
+                    <p class="small text-muted">Comienza con un presupuesto bajo ($5-10/día) para probar y optimizar.</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-primary">🎯 Audiencia</h6>
+                    <p class="small text-muted">Define audiencias específicas. Evita ser demasiado amplio o muy restrictivo.</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-primary">📸 Creativos</h6>
+                    <p class="small text-muted">Usa imágenes de alta calidad y texto claro. Evita más del 20% de texto en la imagen.</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-primary">📈 Optimización</h6>
+                    <p class="small text-muted">Revisa las métricas después de 3-7 días y ajusta según el rendimiento.</p>
+                </div>
+
+                <hr>
+
+                <div class="text-center">
+                    <h6 class="text-muted">¿Necesitas ayuda?</h6>
+                    <button class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Guía Completa
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Rendimiento Reciente
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-primary mb-0">24</h4>
+                            <small class="text-muted">Campañas Activas</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success mb-0">$1,245</h4>
+                        <small class="text-muted">Gastado Este Mes</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-warning mb-0">456</h4>
+                            <small class="text-muted">Leads</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-info mb-0">3.2%</h4>
+                        <small class="text-muted">CTR Promedio</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Vista Previa -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye me-2"></i>
+                    Vista Previa del Anuncio
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Vista en Feed de Noticias</h6>
+                        <div class="border rounded p-3" style="max-width: 400px;">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                    <i class="fab fa-facebook text-white"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold small">Tu Página</div>
+                                    <div class="text-muted" style="font-size: 12px;">Patrocinado</div>
+                                </div>
+                            </div>
+                            <div id="preview-texto-principal" class="mb-2 small"></div>
+                            <div class="bg-light rounded mb-2" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                                <div id="preview-imagen" style="display: none;"></div>
+                            </div>
+                            <div class="small">
+                                <div class="text-muted">tudominio.com</div>
+                                <div id="preview-titulo" class="fw-bold"></div>
+                                <div id="preview-descripcion" class="text-muted"></div>
+                            </div>
+                            <div class="mt-2">
+                                <button class="btn btn-primary btn-sm w-100" id="preview-cta"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Información de la Campaña</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Objetivo:</strong></td>
+                                <td id="preview-objetivo">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Presupuesto Diario:</strong></td>
+                                <td id="preview-presupuesto">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Audiencia:</strong></td>
+                                <td id="preview-audiencia">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ubicación:</strong></td>
+                                <td id="preview-ubicacion">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Edad:</strong></td>
+                                <td id="preview-edad">-</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Establecer fecha mínima como hoy
+document.getElementById('fecha_inicio').min = new Date().toISOString().split('T')[0];
+document.getElementById('fecha_fin').min = new Date().toISOString().split('T')[0];
+
+// Validar que fecha fin sea posterior a fecha inicio
+document.getElementById('fecha_inicio').addEventListener('change', function() {
+    document.getElementById('fecha_fin').min = this.value;
+});
+
+// Validar edad máxima sea mayor que mínima
+document.getElementById('edad_min').addEventListener('change', function() {
+    const edadMax = document.getElementById('edad_max');
+    if (parseInt(edadMax.value) < parseInt(this.value)) {
+        edadMax.value = this.value;
+    }
+    edadMax.min = this.value;
+});
+
+// Contador de caracteres
+function addCharacterCounter(inputId, maxLength, counterId) {
+    const input = document.getElementById(inputId);
+    const counter = document.getElementById(counterId);
+    
+    input.addEventListener('input', function() {
+        const remaining = maxLength - this.value.length;
+        counter.textContent = `${this.value.length}/${maxLength} caracteres`;
+        counter.className = remaining < 10 ? 'form-text text-danger' : 'form-text';
+    });
+}
+
+// Aplicar contadores
+addCharacterCounter('titulo_anuncio', 25, 'titulo-counter');
+addCharacterCounter('texto_principal', 125, 'texto-counter');
+addCharacterCounter('descripcion_anuncio', 30, 'desc-counter');
+
+// Vista previa del anuncio
+document.getElementById('previewBtn').addEventListener('click', function() {
+    // Actualizar vista previa con los datos del formulario
+    document.getElementById('preview-titulo').textContent = document.getElementById('titulo_anuncio').value || 'Título del anuncio';
+    document.getElementById('preview-texto-principal').textContent = document.getElementById('texto_principal').value || 'Texto principal del anuncio...';
+    document.getElementById('preview-descripcion').textContent = document.getElementById('descripcion_anuncio').value || 'Descripción';
+    document.getElementById('preview-cta').textContent = document.getElementById('call_to_action').selectedOptions[0]?.textContent || 'Llamada a la acción';
+    
+    // Información de campaña
+    document.getElementById('preview-objetivo').textContent = document.getElementById('objetivo').selectedOptions[0]?.textContent || '-';
+    document.getElementById('preview-presupuesto').textContent = document.getElementById('presupuesto').value ? `${document.getElementById('presupuesto').value}/día` : '-';
+    document.getElementById('preview-ubicacion').textContent = document.getElementById('pais').selectedOptions[0]?.textContent || '-';
+    
+    const edadMin = document.getElementById('edad_min').value;
+    const edadMax = document.getElementById('edad_max').value;
+    document.getElementById('preview-edad').textContent = `${edadMin} - ${edadMax} años`;
+    
+    const genero = document.querySelector('input[name="genero"]:checked').nextElementSibling.textContent;
+    document.getElementById('preview-audiencia').textContent = genero;
+    
+    // Mostrar modal
+    new bootstrap.Modal(document.getElementById('previewModal')).show();
+});
+
+// Preview de imagen
+document.getElementById('imagen').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewImg = document.getElementById('preview-imagen');
+            previewImg.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 200px; object-fit: cover;" class="rounded">`;
+            previewImg.style.display = 'block';
+            previewImg.previousElementSibling.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

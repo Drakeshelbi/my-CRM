@@ -1,0 +1,352 @@
+<!-- templates/reportes.html -->
+{% extends "base.html" %}
+
+{% block title %}Reportes - ERP Empresarial{% endblock %}
+{% block page_title %}Centro de Reportes{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Centro de Reportes y Análisis
+                </h5>
+                <p class="card-text text-muted">
+                    Genera reportes detallados sobre las operaciones de tu empresa.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reportes de Ventas -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="mb-3">
+            <i class="fas fa-chart-line text-success me-2"></i>
+            Reportes de Ventas
+        </h4>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-calendar-month fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Ventas Mensuales</h5>
+                <p class="card-text">Análisis detallado de ventas por mes con gráficos y tendencias.</p>
+                <a href="/reportes/ventas/mensual" class="btn btn-primary">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-users fa-3x text-info"></i>
+                </div>
+                <h5 class="card-title">Ventas por Cliente</h5>
+                <p class="card-text">Ranking de clientes y análisis de comportamiento de compras.</p>
+                <a href="/reportes/ventas/clientes" class="btn btn-info">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-box fa-3x text-warning"></i>
+                </div>
+                <h5 class="card-title">Productos/Servicios</h5>
+                <p class="card-text">Análisis de productos más vendidos y rentabilidad.</p>
+                <a href="/reportes/ventas/productos" class="btn btn-warning">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reportes de CRM -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="mb-3">
+            <i class="fas fa-handshake text-info me-2"></i>
+            Reportes de CRM
+        </h4>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-user-plus fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">Leads y Conversiones</h5>
+                <p class="card-text">Análisis de leads, tasas de conversión y fuentes de origen.</p>
+                <a href="/reportes/crm/leads" class="btn btn-success">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-bullseye fa-3x text-danger"></i>
+                </div>
+                <h5 class="card-title">Oportunidades de Venta</h5>
+                <p class="card-text">Pipeline de ventas, probabilidades y valor estimado.</p>
+                <a href="/reportes/crm/oportunidades" class="btn btn-danger">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reportes de Recursos Humanos -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="mb-3">
+            <i class="fas fa-user-tie text-purple me-2"></i>
+            Reportes de Recursos Humanos
+        </h4>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-users-cog fa-3x text-secondary"></i>
+                </div>
+                <h5 class="card-title">Empleados</h5>
+                <p class="card-text">Listado detallado de empleados, cargos y departamentos.</p>
+                <a href="/reportes/empleados" class="btn btn-secondary">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-money-bill-wave fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">Nómina</h5>
+                <p class="card-text">Análisis de gastos de nómina, deducciones y bonificaciones.</p>
+                <a href="/reportes/nomina" class="btn btn-success">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-chart-pie fa-3x text-info"></i>
+                </div>
+                <h5 class="card-title">Costos Laborales</h5>
+                <p class="card-text">Análisis detallado de costos por departamento y período.</p>
+                <a href="/reportes/costos-laborales" class="btn btn-info">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reportes Financieros -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="mb-3">
+            <i class="fas fa-dollar-sign text-success me-2"></i>
+            Reportes Financieros
+        </h4>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-file-invoice-dollar fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Estados Financieros</h5>
+                <p class="card-text">Ingresos, gastos y análisis de rentabilidad por período.</p>
+                <a href="/reportes/financiero" class="btn btn-primary">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-credit-card fa-3x text-warning"></i>
+                </div>
+                <h5 class="card-title">Cuentas por Cobrar</h5>
+                <p class="card-text">Estado de facturas pendientes y análisis de cartera.</p>
+                <a href="/reportes/cuentas-cobrar" class="btn btn-warning">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Herramientas de Reporte -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tools me-2"></i>
+                    Herramientas de Reporte
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <button class="btn btn-outline-primary btn-lg mb-2" onclick="generarReportePersonalizado()">
+                            <i class="fas fa-cog me-2"></i>
+                            Reporte Personalizado
+                        </button>
+                        <p class="text-muted small">Crea reportes con filtros específicos</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <button class="btn btn-outline-success btn-lg mb-2" onclick="exportarDatos()">
+                            <i class="fas fa-download me-2"></i>
+                            Exportar Datos
+                        </button>
+                        <p class="text-muted small">Descarga datos en Excel o PDF</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <button class="btn btn-outline-info btn-lg mb-2" onclick="programarReporte()">
+                            <i class="fas fa-clock me-2"></i>
+                            Programar Reporte
+                        </button>
+                        <p class="text-muted small">Envío automático por email</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Reporte Personalizado -->
+<div class="modal fade" id="reportePersonalizadoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-cog me-2"></i>
+                    Crear Reporte Personalizado
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/reportes/personalizado">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Reporte</label>
+                                <select class="form-select" name="tipo_reporte" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="ventas">Ventas</option>
+                                    <option value="clientes">Clientes</option>
+                                    <option value="empleados">Empleados</option>
+                                    <option value="financiero">Financiero</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Formato</label>
+                                <select class="form-select" name="formato" required>
+                                    <option value="html">Vista Web</option>
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Fecha Inicio</label>
+                                <input type="date" class="form-control" name="fecha_inicio" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Fecha Fin</label>
+                                <input type="date" class="form-control" name="fecha_fin" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Filtros Adicionales</label>
+                        <textarea class="form-control" name="filtros" rows="3" 
+                                placeholder="Especifica filtros adicionales (opcional)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-chart-bar me-1"></i>
+                        Generar Reporte
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.text-purple {
+    color: #6f42c1 !important;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+}
+</style>
+
+<script>
+function generarReportePersonalizado() {
+    const modal = new bootstrap.Modal(document.getElementById('reportePersonalizadoModal'));
+    modal.show();
+}
+
+function exportarDatos() {
+    // Aquí implementarías la lógica de exportación
+    alert('Funcionalidad de exportación en desarrollo');
+}
+
+function programarReporte() {
+    // Aquí implementarías la programación de reportes
+    alert('Funcionalidad de programación en desarrollo');
+}
+</script>
+{% endblock %}

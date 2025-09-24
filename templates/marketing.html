@@ -1,0 +1,355 @@
+<!-- templates/marketing.html -->
+{% extends "base.html" %}
+
+{% block title %}Marketing - ERP Empresarial{% endblock %}
+{% block page_title %}Gestión de Marketing{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="text-primary">
+                <i class="fas fa-bullhorn me-2"></i>
+                Gestión de Marketing
+            </h4>
+            <div>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaCampaniaModal">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Nueva Campaña
+                </button>
+                <a href="/marketing/facebook" class="btn btn-primary ms-2">
+                    <i class="fab fa-facebook me-2"></i>
+                    Facebook Ads
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas de Marketing -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white opacity-75">Campañas Activas</h6>
+                        <h4 class="text-white">8</h4>
+                    </div>
+                    <div class="text-white opacity-75">
+                        <i class="fas fa-rocket fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white opacity-75">Presupuesto Total</h6>
+                        <h4 class="text-white">$25,000</h4>
+                    </div>
+                    <div class="text-white opacity-75">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white opacity-75">Leads Generados</h6>
+                        <h4 class="text-white">156</h4>
+                    </div>
+                    <div class="text-white opacity-75">
+                        <i class="fas fa-user-plus fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white opacity-75">ROI Promedio</h6>
+                        <h4 class="text-white">285%</h4>
+                    </div>
+                    <div class="text-white opacity-75">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="plataforma" class="form-label">Plataforma</label>
+                        <select class="form-select" id="plataforma" name="plataforma">
+                            <option value="">Todas las plataformas</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="Google">Google Ads</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Email">Email Marketing</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select class="form-select" id="estado" name="estado">
+                            <option value="">Todos los estados</option>
+                            <option value="activa">Activa</option>
+                            <option value="pausada">Pausada</option>
+                            <option value="finalizada">Finalizada</option>
+                            <option value="borrador">Borrador</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="fecha_desde" class="form-label">Desde</label>
+                        <input type="date" class="form-control" id="fecha_desde" name="fecha_desde">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-2"></i>
+                            Filtrar
+                        </button>
+                        <a href="/marketing" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>
+                            Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Campañas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Campañas de Marketing
+                </h5>
+                <div class="input-group" style="width: 300px;">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Buscar campaña...">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Plataforma</th>
+                                <th>Fecha Inicio</th>
+                                <th>Fecha Fin</th>
+                                <th>Presupuesto</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for campania in campanias %}
+                            <tr>
+                                <td>
+                                    <strong>{{ campania[1] }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ campania[2][:50] }}...</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">Facebook</span>
+                                </td>
+                                <td>{{ campania[3].strftime('%d/%m/%Y') if campania[3] else '-' }}</td>
+                                <td>{{ campania[4].strftime('%d/%m/%Y') if campania[4] else '-' }}</td>
+                                <td>${{ '{:,.2f}'.format(campania[6] if campania[6] else 0) }}</td>
+                                <td>
+                                    {% if campania[5] == 'activa' %}
+                                        <span class="badge bg-success">Activa</span>
+                                    {% elif campania[5] == 'pausada' %}
+                                        <span class="badge bg-warning">Pausada</span>
+                                    {% elif campania[5] == 'finalizada' %}
+                                        <span class="badge bg-secondary">Finalizada</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Borrador</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-primary" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning" title="Pausar/Reanudar">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No hay campañas registradas</p>
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevaCampaniaModal">
+                                        <i class="fas fa-plus me-2"></i>
+                                        Crear Primera Campaña
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Campaña -->
+<div class="modal fade" id="nuevaCampaniaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Nueva Campaña de Marketing
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/marketing/nueva">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre de la Campaña *</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="plataforma_nueva" class="form-label">Plataforma *</label>
+                                <select class="form-select" id="plataforma_nueva" name="plataforma" required>
+                                    <option value="">Seleccionar plataforma</option>
+                                    <option value="Facebook">Facebook</option>
+                                    <option value="Google">Google Ads</option>
+                                    <option value="Instagram">Instagram</option>
+                                    <option value="LinkedIn">LinkedIn</option>
+                                    <option value="Email">Email Marketing</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="fecha_inicio" class="form-label">Fecha de Inicio *</label>
+                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+                                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="presupuesto" class="form-label">Presupuesto *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="presupuesto" name="presupuesto" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="objetivo" class="form-label">Objetivo</label>
+                                <select class="form-select" id="objetivo" name="objetivo">
+                                    <option value="">Seleccionar objetivo</option>
+                                    <option value="awareness">Reconocimiento de marca</option>
+                                    <option value="traffic">Tráfico web</option>
+                                    <option value="leads">Generación de leads</option>
+                                    <option value="conversions">Conversiones</option>
+                                    <option value="engagement">Interacción</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="audiencia" class="form-label">Audiencia Objetivo</label>
+                                <input type="text" class="form-control" id="audiencia" name="audiencia" placeholder="ej. Hombres 25-45, interesados en tecnología">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>
+                        Crear Campaña
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Filtro de búsqueda en tiempo real
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const searchTerm = this.value.toLowerCase();
+    const tableRows = document.querySelectorAll('tbody tr');
+    
+    tableRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// Establecer fecha mínima como hoy
+document.getElementById('fecha_inicio').min = new Date().toISOString().split('T')[0];
+document.getElementById('fecha_fin').min = new Date().toISOString().split('T')[0];
+
+// Validar que fecha fin sea posterior a fecha inicio
+document.getElementById('fecha_inicio').addEventListener('change', function() {
+    document.getElementById('fecha_fin').min = this.value;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,324 @@
+<!-- templates/facturas.html -->
+{% extends "base.html" %}
+
+{% block title %}Facturas - ERP Empresarial{% endblock %}
+{% block page_title %}Gestión de Facturas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="fas fa-file-invoice text-success me-2"></i>
+                Facturas
+            </h2>
+            <div>
+                <a href="{{ url_for('nueva_factura') }}" class="btn btn-success me-2">
+                    <i class="fas fa-plus me-2"></i>
+                    Nueva Factura
+                </a>
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown">
+                    <i class="fas fa-filter me-2"></i>
+                    Filtros
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" onclick="filtrarPorEstado('todas')">Todas</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="filtrarPorEstado('pendiente')">Pendientes</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="filtrarPorEstado('pagada')">Pagadas</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="filtrarPorEstado('vencida')">Vencidas</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card info">
+            <div class="card-body text-center">
+                <i class="fas fa-file-invoice fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ facturas|length }}</h3>
+                <p class="mb-0">Total Facturas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h3 class="mb-0">
+                    {{ facturas|selectattr('5', 'equalto', 'pendiente')|list|length }}
+                </h3>
+                <p class="mb-0">Pendientes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h3 class="mb-0">
+                    {{ facturas|selectattr('5', 'equalto', 'pagada')|list|length }}
+                </h3>
+                <p class="mb-0">Pagadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                <h3 class="mb-0">${{ "%.2f"|format(facturas|sum(attribute='4')) }}</h3>
+                <p class="mb-0">Total Ventas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Listado de Facturas
+                        </h5>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchFactura" 
+                                   placeholder="Buscar por número o cliente...">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for factura in facturas %}
+                            <tr data-estado="{{ factura[5] }}">
+                                <td>
+                                    <strong class="text-primary">#{{ factura[1] }}</strong>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-success text-white me-2">
+                                            {{ factura[2][0].upper() }}
+                                        </div>
+                                        {{ factura[2] }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">
+                                        {{ factura[3].strftime('%d/%m/%Y') }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-success">${{ "%.2f"|format(factura[4]) }}</strong>
+                                </td>
+                                <td>
+                                    {% if factura[5] == 'pendiente' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>Pendiente
+                                        </span>
+                                    {% elif factura[5] == 'pagada' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Pagada
+                                        </span>
+                                    {% elif factura[5] == 'vencida' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>Vencida
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ factura[5]|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button class="btn btn-outline-info" onclick="verFactura({{ factura[0] }})" 
+                                                title="Ver Detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary" onclick="imprimirFactura({{ factura[0] }})" 
+                                                title="Imprimir">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success" onclick="marcarPagada({{ factura[0] }})" 
+                                                title="Marcar como Pagada">
+                                            <i class="fas fa-dollar-sign"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" onclick="enviarEmail({{ factura[0] }})" 
+                                                title="Enviar por Email">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-file-invoice text-muted fa-3x mb-3"></i>
+                                    <p class="text-muted">No hay facturas registradas</p>
+                                    <a href="{{ url_for('nueva_factura') }}" class="btn btn-success">
+                                        <i class="fas fa-plus me-2"></i>
+                                        Crear Primera Factura
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver detalles de factura -->
+<div class="modal fade" id="facturaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    Detalles de Factura
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="facturaDetalles">
+                <!-- Los detalles se cargarán aquí -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Búsqueda en tiempo real
+document.getElementById('searchFactura').addEventListener('input', function() {
+    const searchValue = this.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchValue) ? '' : 'none';
+    });
+});
+
+// Filtrar por estado
+function filtrarPorEstado(estado) {
+    const rows = document.querySelectorAll('tbody tr[data-estado]');
+    
+    rows.forEach(row => {
+        if (estado === 'todas' || row.dataset.estado === estado) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function verFactura(facturaId) {
+    // Simular carga de detalles
+    document.getElementById('facturaDetalles').innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando detalles de la factura...</p>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('facturaModal'));
+    modal.show();
+    
+    // Aquí harías una llamada AJAX para obtener los detalles
+    setTimeout(() => {
+        document.getElementById('facturaDetalles').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Información de Factura</h6>
+                    <p><strong>Número:</strong> #${facturaId}</p>
+                    <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
+                    <p><strong>Estado:</strong> <span class="badge bg-warning">Pendiente</span></p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Cliente</h6>
+                    <p><strong>Nombre:</strong> Cliente Demo</p>
+                    <p><strong>Email:</strong> cliente@email.com</p>
+                </div>
+            </div>
+            <hr>
+            <h6>Items de Factura</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unit.</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Producto de ejemplo</td>
+                            <td>1</td>
+                            <td>$100.00</td>
+                            <td>$100.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }, 1000);
+}
+
+function imprimirFactura(facturaId) {
+    alert(`Imprimiendo factura #${facturaId}`);
+}
+
+function marcarPagada(facturaId) {
+    if (confirm('¿Marcar esta factura como pagada?')) {
+        alert(`Factura #${facturaId} marcada como pagada`);
+        // Aquí harías la llamada AJAX para actualizar el estado
+    }
+}
+
+function enviarEmail(facturaId) {
+    alert(`Enviando factura #${facturaId} por email`);
+}
+</script>
+{% endblock %}

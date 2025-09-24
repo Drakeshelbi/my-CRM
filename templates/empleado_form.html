@@ -1,0 +1,293 @@
+<!-- templates/empleado_form.html -->
+{% extends "base.html" %}
+
+{% block title %}{% if empleado %}Editar{% else %}Nuevo{% endif %} Empleado - ERP Empresarial{% endblock %}
+{% block page_title %}{% if empleado %}Editar{% else %}Nuevo{% endif %} Empleado{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-tie me-2"></i>
+                    {% if empleado %}Editar Empleado{% else %}Nuevo Empleado{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="empleadoForm">
+                    <!-- Información Personal -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-user me-2"></i>
+                                Información Personal
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre Completo *</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" 
+                                       value="{{ empleado[1] if empleado else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Correo Electrónico *</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ empleado[2] if empleado else '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="telefono" class="form-label">Teléfono</label>
+                                <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                       value="{{ empleado[3] if empleado else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                                <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" 
+                                       value="{{ empleado.fecha_nacimiento.strftime('%Y-%m-%d') if empleado and empleado.fecha_nacimiento else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <textarea class="form-control" id="direccion" name="direccion" rows="2" 
+                                  placeholder="Dirección completa">{{ empleado.direccion if empleado else '' }}</textarea>
+                    </div>
+
+                    <hr>
+
+                    <!-- Información Laboral -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-briefcase me-2"></i>
+                                Información Laboral
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cargo" class="form-label">Cargo *</label>
+                                <select class="form-select" id="cargo" name="cargo" required>
+                                    <option value="">Seleccionar cargo...</option>
+                                    <option value="Gerente General" {{ 'selected' if empleado and empleado[4] == 'Gerente General' else '' }}>Gerente General</option>
+                                    <option value="Gerente de Ventas" {{ 'selected' if empleado and empleado[4] == 'Gerente de Ventas' else '' }}>Gerente de Ventas</option>
+                                    <option value="Contador" {{ 'selected' if empleado and empleado[4] == 'Contador' else '' }}>Contador</option>
+                                    <option value="Vendedor" {{ 'selected' if empleado and empleado[4] == 'Vendedor' else '' }}>Vendedor</option>
+                                    <option value="Asistente Administrativo" {{ 'selected' if empleado and empleado[4] == 'Asistente Administrativo' else '' }}>Asistente Administrativo</option>
+                                    <option value="Técnico" {{ 'selected' if empleado and empleado[4] == 'Técnico' else '' }}>Técnico</option>
+                                    <option value="Recursos Humanos" {{ 'selected' if empleado and empleado[4] == 'Recursos Humanos' else '' }}>Recursos Humanos</option>
+                                    <option value="Marketing" {{ 'selected' if empleado and empleado[4] == 'Marketing' else '' }}>Marketing</option>
+                                    <option value="Soporte Técnico" {{ 'selected' if empleado and empleado[4] == 'Soporte Técnico' else '' }}>Soporte Técnico</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="departamento" class="form-label">Departamento</label>
+                                <select class="form-select" id="departamento" name="departamento">
+                                    <option value="">Seleccionar departamento...</option>
+                                    <option value="Administración" {{ 'selected' if empleado and empleado.departamento == 'Administración' else '' }}>Administración</option>
+                                    <option value="Ventas" {{ 'selected' if empleado and empleado.departamento == 'Ventas' else '' }}>Ventas</option>
+                                    <option value="Contabilidad" {{ 'selected' if empleado and empleado.departamento == 'Contabilidad' else '' }}>Contabilidad</option>
+                                    <option value="Recursos Humanos" {{ 'selected' if empleado and empleado.departamento == 'Recursos Humanos' else '' }}>Recursos Humanos</option>
+                                    <option value="Técnico" {{ 'selected' if empleado and empleado.departamento == 'Técnico' else '' }}>Técnico</option>
+                                    <option value="Marketing" {{ 'selected' if empleado and empleado.departamento == 'Marketing' else '' }}>Marketing</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="salario" class="form-label">Salario Mensual *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="salario" name="salario" 
+                                           value="{{ empleado[5] if empleado else '' }}" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="fecha_ingreso" class="form-label">Fecha de Ingreso</label>
+                                <input type="date" class="form-control" id="fecha_ingreso" name="fecha_ingreso" 
+                                       value="{{ empleado[6].strftime('%Y-%m-%d') if empleado and empleado[6] else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="tipo_contrato" class="form-label">Tipo de Contrato</label>
+                                <select class="form-select" id="tipo_contrato" name="tipo_contrato">
+                                    <option value="">Seleccionar tipo...</option>
+                                    <option value="Tiempo Completo" {{ 'selected' if empleado and empleado.tipo_contrato == 'Tiempo Completo' else '' }}>Tiempo Completo</option>
+                                    <option value="Medio Tiempo" {{ 'selected' if empleado and empleado.tipo_contrato == 'Medio Tiempo' else '' }}>Medio Tiempo</option>
+                                    <option value="Por Horas" {{ 'selected' if empleado and empleado.tipo_contrato == 'Por Horas' else '' }}>Por Horas</option>
+                                    <option value="Temporal" {{ 'selected' if empleado and empleado.tipo_contrato == 'Temporal' else '' }}>Temporal</option>
+                                    <option value="Contratista" {{ 'selected' if empleado and empleado.tipo_contrato == 'Contratista' else '' }}>Contratista</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Información de Contacto de Emergencia -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-phone-alt me-2"></i>
+                                Contacto de Emergencia
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contacto_emergencia_nombre" class="form-label">Nombre del Contacto</label>
+                                <input type="text" class="form-control" id="contacto_emergencia_nombre" 
+                                       name="contacto_emergencia_nombre" 
+                                       value="{{ empleado.contacto_emergencia_nombre if empleado else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contacto_emergencia_telefono" class="form-label">Teléfono del Contacto</label>
+                                <input type="tel" class="form-control" id="contacto_emergencia_telefono" 
+                                       name="contacto_emergencia_telefono" 
+                                       value="{{ empleado.contacto_emergencia_telefono if empleado else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="relacion_contacto" class="form-label">Relación</label>
+                        <select class="form-select" id="relacion_contacto" name="relacion_contacto">
+                            <option value="">Seleccionar relación...</option>
+                            <option value="Padre/Madre" {{ 'selected' if empleado and empleado.relacion_contacto == 'Padre/Madre' else '' }}>Padre/Madre</option>
+                            <option value="Esposo/Esposa" {{ 'selected' if empleado and empleado.relacion_contacto == 'Esposo/Esposa' else '' }}>Esposo/Esposa</option>
+                            <option value="Hermano/Hermana" {{ 'selected' if empleado and empleado.relacion_contacto == 'Hermano/Hermana' else '' }}>Hermano/Hermana</option>
+                            <option value="Hijo/Hija" {{ 'selected' if empleado and empleado.relacion_contacto == 'Hijo/Hija' else '' }}>Hijo/Hija</option>
+                            <option value="Amigo/Amiga" {{ 'selected' if empleado and empleado.relacion_contacto == 'Amigo/Amiga' else '' }}>Amigo/Amiga</option>
+                            <option value="Otro" {{ 'selected' if empleado and empleado.relacion_contacto == 'Otro' else '' }}>Otro</option>
+                        </select>
+                    </div>
+
+                    <hr>
+
+                    <!-- Estado del Empleado -->
+                    {% if empleado %}
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-toggle-on me-2"></i>
+                                Estado del Empleado
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="activo" name="activo" 
+                                   {{ 'checked' if empleado and empleado[7] else '' }}>
+                            <label class="form-check-label" for="activo">
+                                Empleado Activo
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            Los empleados inactivos no aparecerán en las nóminas y reportes activos.
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Botones de Acción -->
+                    <div class="d-flex justify-content-between">
+                        <a href="/empleados" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Volver
+                        </a>
+                        <div>
+                            <button type="button" class="btn btn-outline-primary me-2" onclick="limpiarFormulario()">
+                                <i class="fas fa-eraser me-2"></i>
+                                Limpiar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                {% if empleado %}Actualizar{% else %}Guardar{% endif %} Empleado
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Validación del formulario
+    document.getElementById('empleadoForm').addEventListener('submit', function(e) {
+        const nombre = document.getElementById('nombre').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const cargo = document.getElementById('cargo').value;
+        const salario = parseFloat(document.getElementById('salario').value);
+        
+        if (!nombre || !email || !cargo || !salario || salario <= 0) {
+            e.preventDefault();
+            alert('Por favor, complete todos los campos obligatorios correctamente.');
+            return false;
+        }
+        
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('Por favor, ingrese un email válido.');
+            return false;
+        }
+        
+        return true;
+    });
+    
+    // Función para limpiar el formulario
+    function limpiarFormulario() {
+        if (confirm('¿Está seguro de que desea limpiar el formulario?')) {
+            document.getElementById('empleadoForm').reset();
+        }
+    }
+    
+    // Formatear el campo de salario
+    document.getElementById('salario').addEventListener('input', function(e) {
+        let value = parseFloat(e.target.value);
+        if (!isNaN(value)) {
+            e.target.value = value.toFixed(2);
+        }
+    });
+    
+    // Auto-completar fecha de ingreso con la fecha actual si está vacía
+    document.addEventListener('DOMContentLoaded', function() {
+        const fechaIngreso = document.getElementById('fecha_ingreso');
+        if (!fechaIngreso.value) {
+            const today = new Date().toISOString().split('T')[0];
+            fechaIngreso.value = today;
+        }
+    });
+</script>
+{% endblock %}

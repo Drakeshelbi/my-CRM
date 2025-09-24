@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Facebook - ERP Sistema</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-facebook {
+            background: #1877f2;
+            border-color: #1877f2;
+            color: white;
+        }
+        .btn-facebook:hover {
+            background: #166fe5;
+            border-color: #166fe5;
+            color: white;
+        }
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .audience-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin: 2px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-home"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('marketing') }}">
+                                <i class="fas fa-bullhorn"></i> Marketing
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('crm') }}">
+                                <i class="fas fa-users"></i> CRM
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ml-sm-auto px-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="fab fa-facebook-square text-primary"></i>
+                        Crear Campaña de Facebook
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="{{ url_for('campanias_facebook') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> Ver Campañas
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Mensajes Flash -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Estado de Conexión -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <h5><i class="fas fa-plug"></i> Estado de Conexión</h5>
+                                        <span id="connection-status" class="badge bg-secondary">Verificando...</span>
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <button type="button" class="btn btn-outline-primary" onclick="testConnection()">
+                                            <i class="fas fa-check-circle"></i> Probar Conexión
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de Campaña -->
+                <form method="POST" id="facebook-campaign-form">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <!-- Información Básica -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Información de la Campaña</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="titulo" class="form-label">Nombre de la Campaña *</label>
+                                                <input type="text" class="form-control" id="titulo" name="titulo" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="objetivo" class="form-label">Objetivo *</label>
+                                                <select class="form-select" id="objetivo" name="objetivo" required>
+                                                    <option value="">Seleccionar objetivo...</option>
+                                                    <option value="LINK_CLICKS">Clics en Enlaces</option>
+                                                    <option value="IMPRESSIONS">Impresiones</option>
+                                                    <option value="REACH">Alcance</option>
+                                                    <option value="LEAD_GENERATION">Generación de Leads</option>
+                                                    <option value="CONVERSIONS">Conversiones</option>
+                                                    <option value="BRAND_AWARENESS">Conocimiento de Marca</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="descripcion" class="form-label">Descripción</label>
+                                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3" placeholder="Describe el objetivo y estrategia de tu campaña..."></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="presupuesto" class="form-label">Presupuesto Diario (USD) *</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" class="form-control" id="presupuesto" name="presupuesto" step="0.01" min="1" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="duracion" class="form-label">Duración Estimada (días)</label>
+                                                <input type="number" class="form-control" id="duracion" name="duracion" min="1" value="7">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Configuración de Audiencia -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-users"></i> Configuración de Audiencia</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-section">
+                                        <h6><i class="fas fa-globe"></i> Ubicación Geográfica</h6>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <label class="form-label">Países *</label>
+                                                <select class="form-select" name="paises[]" multiple size="4" required>
+                                                    <option value="MX">México</option>
+                                                    <option value="US">Estados Unidos</option>
+                                                    <option value="CA">Canadá</option>
+                                                    <option value="ES">España</option>
+                                                    <option value="AR">Argentina</option>
+                                                    <option value="CO">Colombia</option>
+                                                    <option value="PE">Perú</option>
+                                                    <option value="CL">Chile</option>
+                                                </select>
+                                                <small class="form-text text-muted">Mantén presionado Ctrl (Windows) o Cmd (Mac) para seleccionar múltiples países</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-section">
+                                        <h6><i class="fas fa-birthday-cake"></i> Demografía</h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="edad_min" class="form-label">Edad Mínima</label>
+                                                <input type="number" class="form-control" id="edad_min" name="edad_min" min="13" max="65" value="18">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="edad_max" class="form-label">Edad Máxima</label>
+                                                <input type="number" class="form-control" id="edad_max" name="edad_max" min="13" max="65" value="65">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-section">
+                                        <h6><i class="fas fa-heart"></i> Intereses y Comportamientos</h6>
+                                        <div class="mb-3">
+                                            <label class="form-label">Buscar Intereses</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="buscar-interes" placeholder="Ej: tecnología, cocina, deportes...">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="buscarIntereses()">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div id="intereses-sugeridos" class="mb-3"></div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Intereses Seleccionados</label>
+                                            <div id="intereses-seleccionados" class="border rounded p-2 min-height-100">
+                                                <small class="text-muted">Los intereses seleccionados aparecerán aquí</small>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="intereses[]" id="intereses-hidden">
+                                    </div>
+
+                                    <div class="form-section">
+                                        <h6><i class="fas fa-chart-line"></i> Tamaño de Audiencia</h6>
+                                        <div class="mb-3">
+                                            <label for="audiencia" class="form-label">Tipo de Audiencia</label>
+                                            <select class="form-select" id="audiencia" name="audiencia" required>
+                                                <option value="BROAD">Amplia (Mayor alcance)</option>
+                                                <option value="NARROW">Específica (Mayor precisión)</option>
+                                                <option value="CUSTOM">Personalizada</option>
+                                            </select>
+                                        </div>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <strong>Estimación:</strong> <span id="audience-estimate">Configurando audiencia...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel Lateral -->
+                        <div class="col-lg-4">
+                            <!-- Resumen de Campaña -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Resumen de Campaña</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>Presupuesto Diario:</strong></td>
+                                            <td><span id="resumen-presupuesto">$0.00</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Duración:</strong></td>
+                                            <td><span id="resumen-duracion">0 días</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Presupuesto Total:</strong></td>
+                                            <td><span id="resumen-total">$0.00</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Objetivo:</strong></td>
+                                            <td><span id="resumen-objetivo">No seleccionado</span></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Cuentas Publicitarias -->
+                            {% if cuentas %}
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-credit-card"></i> Cuentas Publicitarias</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% for cuenta in cuentas %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="cuenta_publicitaria" id="cuenta{{ loop.index }}" value="{{ cuenta.id }}">
+                                        <label class="form-check-label" for="cuenta{{ loop.index }}">
+                                            {{ cuenta.name }}
+                                            <small class="text-muted d-block">{{ cuenta.id }}</small>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Consejos -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Consejos</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success"></i>
+                                            <small>Define claramente tu objetivo antes de crear la campaña</small>
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success"></i>
+                                            <small>Comienza con presupuestos pequeños para probar</small>
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success"></i>
+                                            <small>Segmenta tu audiencia de manera específica</small>
+                                        </li>
+                                        <li class="mb-0">
+                                            <i class="fas fa-check text-success"></i>
+                                            <small>Monitorea el rendimiento diariamente</small>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <button type="button" class="btn btn-secondary me-2" onclick="window.history.back()">
+                                        <i class="fas fa-arrow-left"></i> Cancelar
+                                    </button>
+                                    <button type="submit" class="btn btn-facebook btn-lg">
+                                        <i class="fab fa-facebook-f"></i> Crear Campaña en Facebook
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let interesesSeleccionados = [];
+
+        // Actualizar resumen en tiempo real
+        document.addEventListener('DOMContentLoaded', function() {
+            const presupuesto = document.getElementById('presupuesto');
+            const duracion = document.getElementById('duracion');
+            const objetivo = document.getElementById('objetivo');
+
+            function actualizarResumen() {
+                const presupuestoVal = parseFloat(presupuesto.value) || 0;
+                const duracionVal = parseInt(duracion.value) || 0;
+                const objetivoVal = objetivo.value;
+
+                document.getElementById('resumen-presupuesto').textContent = '$' + presupuestoVal.toFixed(2);
+                document.getElementById('resumen-duracion').textContent = duracionVal + ' días';
+                document.getElementById('resumen-total').textContent = '$' + (presupuestoVal * duracionVal).toFixed(2);
+                document.getElementById('resumen-objetivo').textContent = objetivoVal || 'No seleccionado';
+            }
+
+            presupuesto.addEventListener('input', actualizarResumen);
+            duracion.addEventListener('input', actualizarResumen);
+            objetivo.addEventListener('change', actualizarResumen);
+
+            // Probar conexión al cargar
+            testConnection();
+        });
+
+        function testConnection() {
+            const status = document.getElementById('connection-status');
+            status.className = 'badge bg-warning';
+            status.textContent = 'Probando...';
+
+            fetch('/api/facebook/test-conexion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    status.className = 'badge bg-success';
+                    status.textContent = 'Conectado ✓';
+                } else {
+                    status.className = 'badge bg-danger';
+                    status.textContent = 'Error de conexión';
+                }
+            })
+            .catch(error => {
+                status.className = 'badge bg-danger';
+                status.textContent = 'Error de conexión';
+            });
+        }
+
+        function buscarIntereses() {
+            const termino = document.getElementById('buscar-interes').value.trim();
+            if (!termino) return;
+
+            const sugeridosDiv = document.getElementById('intereses-sugeridos');
+            sugeridosDiv.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm"></div> Buscando...</div>';
+
+            fetch('/api/facebook/audiencias-sugeridas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ interes: termino })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let html = '<div class="mb-2"><strong>Sugerencias:</strong></div>';
+                    data.intereses.forEach(interes => {
+                        html += `
+                            <button type="button" class="btn btn-outline-primary btn-sm me-1 mb-1" 
+                                    onclick="agregarInteres('${interes.id}', '${interes.name}')">
+                                ${interes.name}
+                            </button>
+                        `;
+                    });
+                    sugeridosDiv.innerHTML = html;
+                } else {
+                    sugeridosDiv.innerHTML = '<div class="text-muted">No se encontraron sugerencias</div>';
+                }
+            })
+            .catch(error => {
+                sugeridosDiv.innerHTML = '<div class="text-danger">Error buscando intereses</div>';
+            });
+        }
+
+        function agregarInteres(id, nombre) {
+            if (!interesesSeleccionados.find(i => i.id === id)) {
+                interesesSeleccionados.push({ id, nombre });
+                actualizarInteresesSeleccionados();
+            }
+        }
+
+        function eliminarInteres(id) {
+            interesesSeleccionados = interesesSeleccionados.filter(i => i.id !== id);
+            actualizarInteresesSeleccionados();
+        }
+
+        function actualizarInteresesSeleccionados() {
+            const container = document.getElementById('intereses-seleccionados');
+            const hiddenInput = document.getElementById('intereses-hidden');
+
+            if (interesesSeleccionados.length === 0) {
+                container.innerHTML = '<small class="text-muted">Los intereses seleccionados aparecerán aquí</small>';
+                hiddenInput.value = '';
+            } else {
+                let html = '';
+                interesesSeleccionados.forEach(interes => {
+                    html += `
+                        <span class="audience-tag">
+                            ${interes.nombre}
+                            <button type="button" class="btn-close btn-close-white ms-1" 
+                                    style="font-size: 0.7em;" onclick="eliminarInteres('${interes.id}')">
+                            </button>
+                        </span>
+                    `;
+                });
+                container.innerHTML = html;
+                hiddenInput.value = JSON.stringify(interesesSeleccionados.map(i => i.id));
+            }
+        }
+
+        // Validación del formulario
+        document.getElementById('facebook-campaign-form').addEventListener('submit', function(e) {
+            const titulo = document.getElementById('titulo').value.trim();
+            const objetivo = document.getElementById('objetivo').value;
+            const presupuesto = document.getElementById('presupuesto').value;
+
+            if (!titulo || !objetivo || !presupuesto) {
+                e.preventDefault();
+                alert('Por favor completa todos los campos requeridos');
+                return;
+            }
+
+            if (parseFloat(presupuesto) < 1) {
+                e.preventDefault();
+                alert('El presupuesto mínimo es $1.00 USD');
+                return;
+            }
+
+            // Confirmar creación
+            if (!confirm('¿Estás seguro de crear esta campaña en Facebook?')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

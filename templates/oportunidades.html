@@ -1,0 +1,634 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Oportunidades - ERP Sistema{% endblock %}
+
+{% block extra_css %}
+<style>
+    .oportunidad-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #6c757d;
+    }
+    
+    .oportunidad-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .estado-prospecto { border-left-color: #17a2b8; }
+    .estado-calificado { border-left-color: #ffc107; }
+    .estado-propuesta { border-left-color: #fd7e14; }
+    .estado-negociacion { border-left-color: #e83e8c; }
+    .estado-cerrada { border-left-color: #28a745; }
+    
+    .valor-oportunidad {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .probabilidad-badge {
+        font-size: 0.9em;
+        padding: 0.3em 0.8em;
+    }
+    
+    .fecha-estimada {
+        color: #6c757d;
+        font-size: 0.9em;
+    }
+    
+    .acciones-rapidas {
+        display: none;
+    }
+    
+    .oportunidad-card:hover .acciones-rapidas {
+        display: block;
+    }
+    
+    .filtros-container {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .estadisticas-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2em;
+        font-weight: bold;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.9em;
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-bullseye text-primary"></i> Gestión de Oportunidades</h2>
+                    <p class="text-muted">Administra y da seguimiento a todas las oportunidades de negocio</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevaOportunidad">
+                        <i class="fas fa-plus"></i> Nueva Oportunidad
+                    </button>
+                    <button class="btn btn-outline-secondary ms-2" onclick="exportarOportunidades()">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Generales -->
+    <div class="estadisticas-container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalOportunidades">{{ oportunidades|length }}</span>
+                    <span class="stat-label">Total Oportunidades</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <span class="stat-number" id="valorTotal">$0</span>
+                    <span class="stat-label">Valor Total</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <span class="stat-number" id="valorPonderado">$0</span>
+                    <span class="stat-label">Valor Ponderado</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <span class="stat-number" id="probabilidadPromedio">0%</span>
+                    <span class="stat-label">Probabilidad Promedio</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-container">
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label">Filtrar por Estado</label>
+                <select class="form-select" id="filtroEstado" onchange="filtrarOportunidades()">
+                    <option value="">Todos los estados</option>
+                    <option value="prospecto">Prospecto</option>
+                    <option value="calificado">Calificado</option>
+                    <option value="propuesta">Propuesta</option>
+                    <option value="negociacion">Negociación</option>
+                    <option value="cerrada">Cerrada</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Probabilidad Mínima</label>
+                <input type="range" class="form-range" id="filtroProbabilidad" min="0" max="100" value="0" 
+                       onchange="filtrarOportunidades(); document.getElementById('valorProbabilidad').textContent = this.value + '%'">
+                <small class="text-muted">Mínimo: <span id="valorProbabilidad">0%</span></small>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Valor Mínimo</label>
+                <input type="number" class="form-control" id="filtroValor" placeholder="0" onchange="filtrarOportunidades()">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="filtroBusqueda" placeholder="Cliente o descripción..." onkeyup="filtrarOportunidades()">
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Oportunidades -->
+    <div class="row" id="listaOportunidades">
+        {% for oportunidad in oportunidades %}
+        <div class="col-lg-6 col-xl-4 mb-4 oportunidad-item" 
+             data-estado="{{ oportunidad[5] }}" 
+             data-probabilidad="{{ oportunidad[4] }}" 
+             data-valor="{{ oportunidad[3] }}"
+             data-cliente="{{ oportunidad[1] }}"
+             data-descripcion="{{ oportunidad[2] }}">
+            <div class="card oportunidad-card estado-{{ oportunidad[5] }}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-building text-primary"></i>
+                        {{ oportunidad[1] }}
+                    </h6>
+                    <div class="dropdown acciones-rapidas">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/oportunidades/{{ oportunidad[0] }}/editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="abrirModalActualizar({{ oportunidad[0] }}, '{{ oportunidad[5] }}', {{ oportunidad[4] }})">
+                                <i class="fas fa-sync"></i> Actualizar Estado
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-success" href="#" onclick="cerrarOportunidad({{ oportunidad[0] }}, 'ganada')">
+                                <i class="fas fa-check-circle"></i> Marcar como Ganada
+                            </a></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="cerrarOportunidad({{ oportunidad[0] }}, 'perdida')">
+                                <i class="fas fa-times-circle"></i> Marcar como Perdida
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-text mb-2">{{ oportunidad[2] }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="valor-oportunidad">${{ "{:,.2f}".format(oportunidad[3]) }}</span>
+                        <span class="badge probabilidad-badge 
+                            {% if oportunidad[4] >= 80 %}bg-success
+                            {% elif oportunidad[4] >= 50 %}bg-warning
+                            {% else %}bg-secondary{% endif %}">
+                            {{ oportunidad[4] }}% probabilidad
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-primary">{{ oportunidad[5]|title }}</span>
+                        {% if oportunidad[7] %}
+                        <small class="fecha-estimada">
+                            <i class="fas fa-calendar-alt"></i>
+                            Est: {{ moment(oportunidad[7]).format('DD/MM/YYYY') }}
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i>
+                            {{ moment(oportunidad[6]).fromNow() }}
+                        </small>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="verDetalles({{ oportunidad[0] }})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Mensaje si no hay oportunidades -->
+    <div class="row" id="sinOportunidades" style="display: none;">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-bullseye fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay oportunidades que coincidan con los filtros</h4>
+                <p class="text-muted">Intenta ajustar los filtros o crear una nueva oportunidad</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Oportunidad -->
+<div class="modal fade" id="modalNuevaOportunidad" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle text-primary"></i>
+                    Nueva Oportunidad
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/crm" method="POST">
+                <input type="hidden" name="tipo" value="oportunidad">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Cliente *</label>
+                                <select class="form-select" name="cliente_id" required>
+                                    <option value="">Seleccionar cliente...</option>
+                                    {% for cliente in clientes %}
+                                    <option value="{{ cliente[0] }}">{{ cliente[1] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Valor Estimado *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" name="valor" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción *</label>
+                        <textarea class="form-control" name="descripcion" rows="3" required 
+                                  placeholder="Describe la oportunidad de negocio..."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Probabilidad de Cierre (%)</label>
+                                <input type="range" class="form-range" name="probabilidad" min="0" max="100" value="50" 
+                                       onchange="document.getElementById('valorProbabilidadModal').textContent = this.value + '%'">
+                                <small class="text-muted">Actual: <span id="valorProbabilidadModal">50%</span></small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Fecha Estimada de Cierre</label>
+                                <input type="date" class="form-control" name="fecha_cierre_estimada">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Crear Oportunidad
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Actualizar Estado -->
+<div class="modal fade" id="modalActualizarEstado" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-sync text-primary"></i>
+                    Actualizar Oportunidad
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formActualizarEstado">
+                    <input type="hidden" id="oportunidadId">
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="nuevoEstado">
+                            <option value="prospecto">Prospecto</option>
+                            <option value="calificado">Calificado</option>
+                            <option value="propuesta">Propuesta</option>
+                            <option value="negociacion">Negociación</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Probabilidad (%)</label>
+                        <input type="range" class="form-range" id="nuevaProbabilidad" min="0" max="100" 
+                               onchange="document.getElementById('valorNuevaProbabilidad').textContent = this.value + '%'">
+                        <small class="text-muted">Actual: <span id="valorNuevaProbabilidad">50%</span></small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notas</label>
+                        <textarea class="form-control" id="notasActualizacion" rows="3" 
+                                  placeholder="Comentarios sobre la actualización..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="actualizarEstado()">
+                    <i class="fas fa-save"></i> Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cerrar Oportunidad -->
+<div class="modal fade" id="modalCerrarOportunidad" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-flag-checkered text-primary"></i>
+                    Cerrar Oportunidad
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCerrarOportunidad">
+                    <input type="hidden" id="oportunidadCerrarId">
+                    <input type="hidden" id="estadoCierre">
+                    <div class="mb-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <span id="mensajeCierre"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Comentarios del Cierre</label>
+                        <textarea class="form-control" id="notasCierre" rows="4" 
+                                  placeholder="Explica el resultado de la oportunidad..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarCierre()">
+                    <i class="fas fa-check"></i> Confirmar Cierre
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let oportunidades = {{ oportunidades|tojson }};
+
+// Calcular estadísticas al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    calcularEstadisticas();
+});
+
+function calcularEstadisticas() {
+    let totalOportunidades = oportunidades.length;
+    let valorTotal = 0;
+    let valorPonderado = 0;
+    let probabilidadTotal = 0;
+    
+    oportunidades.forEach(oportunidad => {
+        let valor = parseFloat(oportunidad[3]);
+        let probabilidad = parseFloat(oportunidad[4]);
+        
+        valorTotal += valor;
+        valorPonderado += (valor * probabilidad / 100);
+        probabilidadTotal += probabilidad;
+    });
+    
+    document.getElementById('totalOportunidades').textContent = totalOportunidades;
+    document.getElementById('valorTotal').textContent = '$' + valorTotal.toLocaleString('es-MX', {minimumFractionDigits: 2});
+    document.getElementById('valorPonderado').textContent = '$' + valorPonderado.toLocaleString('es-MX', {minimumFractionDigits: 2});
+    document.getElementById('probabilidadPromedio').textContent = totalOportunidades > 0 ? 
+        Math.round(probabilidadTotal / totalOportunidades) + '%' : '0%';
+}
+
+function filtrarOportunidades() {
+    const filtroEstado = document.getElementById('filtroEstado').value.toLowerCase();
+    const filtroProbabilidad = parseInt(document.getElementById('filtroProbabilidad').value);
+    const filtroValor = parseFloat(document.getElementById('filtroValor').value) || 0;
+    const filtroBusqueda = document.getElementById('filtroBusqueda').value.toLowerCase();
+    
+    const items = document.querySelectorAll('.oportunidad-item');
+    let visibles = 0;
+    
+    items.forEach(item => {
+        const estado = item.dataset.estado.toLowerCase();
+        const probabilidad = parseInt(item.dataset.probabilidad);
+        const valor = parseFloat(item.dataset.valor);
+        const cliente = item.dataset.cliente.toLowerCase();
+        const descripcion = item.dataset.descripcion.toLowerCase();
+        
+        let mostrar = true;
+        
+        // Filtro por estado
+        if (filtroEstado && estado !== filtroEstado) {
+            mostrar = false;
+        }
+        
+        // Filtro por probabilidad
+        if (probabilidad < filtroProbabilidad) {
+            mostrar = false;
+        }
+        
+        // Filtro por valor
+        if (valor < filtroValor) {
+            mostrar = false;
+        }
+        
+        // Filtro por búsqueda
+        if (filtroBusqueda && !cliente.includes(filtroBusqueda) && !descripcion.includes(filtroBusqueda)) {
+            mostrar = false;
+        }
+        
+        item.style.display = mostrar ? 'block' : 'none';
+        if (mostrar) visibles++;
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    document.getElementById('sinOportunidades').style.display = visibles === 0 ? 'block' : 'none';
+    document.getElementById('listaOportunidades').style.display = visibles === 0 ? 'none' : 'flex';
+}
+
+function abrirModalActualizar(id, estadoActual, probabilidadActual) {
+    document.getElementById('oportunidadId').value = id;
+    document.getElementById('nuevoEstado').value = estadoActual;
+    document.getElementById('nuevaProbabilidad').value = probabilidadActual;
+    document.getElementById('valorNuevaProbabilidad').textContent = probabilidadActual + '%';
+    
+    new bootstrap.Modal(document.getElementById('modalActualizarEstado')).show();
+}
+
+function actualizarEstado() {
+    const id = document.getElementById('oportunidadId').value;
+    const estado = document.getElementById('nuevoEstado').value;
+    const probabilidad = document.getElementById('nuevaProbabilidad').value;
+    const notas = document.getElementById('notasActualizacion').value;
+    
+    fetch(`/api/oportunidades/${id}/actualizar`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            estado: estado,
+            probabilidad: probabilidad,
+            notas: notas
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarNotificacion('Oportunidad actualizada exitosamente', 'success');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            mostrarNotificacion('Error: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        mostrarNotificacion('Error de conexión', 'error');
+    });
+    
+    bootstrap.Modal.getInstance(document.getElementById('modalActualizarEstado')).hide();
+}
+
+function cerrarOportunidad(id, resultado) {
+    document.getElementById('oportunidadCerrarId').value = id;
+    document.getElementById('estadoCierre').value = resultado;
+    
+    const mensaje = resultado === 'ganada' ? 
+        'Vas a marcar esta oportunidad como GANADA. Esto significa que el negocio fue exitoso.' :
+        'Vas a marcar esta oportunidad como PERDIDA. El negocio no se concretó.';
+    
+    document.getElementById('mensajeCierre').textContent = mensaje;
+    
+    new bootstrap.Modal(document.getElementById('modalCerrarOportunidad')).show();
+}
+
+function confirmarCierre() {
+    const id = document.getElementById('oportunidadCerrarId').value;
+    const estado = document.getElementById('estadoCierre').value;
+    const notas = document.getElementById('notasCierre').value;
+    
+    fetch(`/api/oportunidades/${id}/cerrar`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            estado: estado,
+            notas: notas
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarNotificacion('Oportunidad cerrada exitosamente', 'success');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            mostrarNotificacion('Error: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        mostrarNotificacion('Error de conexión', 'error');
+    });
+    
+    bootstrap.Modal.getInstance(document.getElementById('modalCerrarOportunidad')).hide();
+}
+
+function verDetalles(id) {
+    // Redireccionar a la página de edición que muestra todos los detalles
+    window.location.href = `/oportunidades/${id}/editar`;
+}
+
+function exportarOportunidades() {
+    const datos = [];
+    const headers = ['Cliente', 'Descripción', 'Valor', 'Probabilidad', 'Estado', 'Fecha Creación'];
+    
+    datos.push(headers);
+    
+    oportunidades.forEach(oportunidad => {
+        datos.push([
+            oportunidad[1], // Cliente
+            oportunidad[2], // Descripción  
+            oportunidad[3], // Valor
+            oportunidad[4] + '%', // Probabilidad
+            oportunidad[5], // Estado
+            new Date(oportunidad[6]).toLocaleDateString() // Fecha
+        ]);
+    });
+    
+    // Crear CSV
+    const csvContent = datos.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Descargar archivo
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `oportunidades_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    mostrarNotificacion('Archivo exportado exitosamente', 'success');
+}
+
+function mostrarNotificacion(mensaje, tipo) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${tipo === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        ${mensaje}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Ventas Mensual - ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .metric-card-2 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .metric-card-3 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        .metric-card-4 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0,0,0,.02);
+        }
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+        .trend-neutral { color: #6c757d; }
+        
+        @media print {
+            .btn-group { display: none !important; }
+            .card { box-shadow: none !important; }
+            .dashboard-header { background: #667eea !important; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-calendar-alt me-3"></i>Reporte de Ventas Mensual</h1>
+                    <p class="mb-0">Análisis detallado y comparativo de ventas mensuales</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="btn-group">
+                        <button class="btn btn-light" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Imprimir
+                        </button>
+                        <button class="btn btn-light" onclick="exportarDatos()">
+                            <i class="fas fa-download me-2"></i>Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Métricas Principales -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title opacity-75">Total Anual</h6>
+                                <h3 id="totalAnual">$0.00</h3>
+                                <small id="numeroMeses">0 meses</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-dollar-sign fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card metric-card-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title opacity-75">Mejor Mes</h6>
+                                <h4 id="mejorMes">-</h4>
+                                <small id="mejorMesVenta">$0.00</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-trophy fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card metric-card-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title opacity-75">Crecimiento</h6>
+                                <h3 id="crecimiento">0.0%</h3>
+                                <small>vs primer mes</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-chart-line fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card metric-card-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title opacity-75">Promedio Mensual</h6>
+                                <h3 id="promedioMensual">$0</h3>
+                                <small>por mes</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-chart-bar fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Tendencia de Ventas Mensuales</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Distribución de Ventas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparativo Anual -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-balance-scale me-2"></i>Comparativo Anual</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="comparativoChart"></canvas>
+                        </div>
+                        <div class="row mt-3" id="comparativoStats">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla Detallada -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-table me-2"></i>Detalle Mensual</h5>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="mostrarPromedio">
+                            <label class="form-check-label" for="mostrarPromedio">Mostrar promedio</label>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Mes</th>
+                                        <th class="text-center">Facturas</th>
+                                        <th class="text-end">Total Ventas</th>
+                                        <th class="text-end">Promedio por Venta</th>
+                                        <th class="text-center">vs Mes Anterior</th>
+                                        <th class="text-center">% del Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaDetalle">
+                                    <!-- Se llena dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Clientes del Mes -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-star me-2"></i>Top 5 Clientes del Mes Actual</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="topClientes">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navegación -->
+        <div class="row">
+            <div class="col-12 text-center">
+                <a href="#" class="btn btn-secondary btn-lg me-3" onclick="alert('Función de navegación')">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Reportes
+                </a>
+                <a href="#" class="btn btn-success btn-lg" onclick="alert('Función de navegación')">
+                    <i class="fas fa-users me-2"></i>Reporte de Clientes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Datos de ejemplo (simulando datos del backend)
+        const ventasMensuales = [
+            [1, 'Enero', 45, 125000.50, 2777.78],
+            [2, 'Febrero', 52, 145000.75, 2788.46],
+            [3, 'Marzo', 38, 98500.25, 2592.11],
+            [4, 'Abril', 61, 178000.00, 2918.03],
+            [5, 'Mayo', 47, 142000.80, 3021.29],
+            [6, 'Junio', 55, 167500.40, 3045.46],
+            [7, 'Julio', 49, 155000.60, 3163.28],
+            [8, 'Agosto', 58, 185000.90, 3189.67],
+            [9, 'Septiembre', 42, 132000.75, 3142.87],
+            [10, 'Octubre', 67, 205000.50, 3059.71],
+            [11, 'Noviembre', 71, 225000.85, 3169.73],
+            [12, 'Diciembre', 84, 285000.95, 3392.87]
+        ];
+
+        const comparativoAnual = [
+            [2023, 1850000.00, 645],
+            [2024, 2145000.00, 689]
+        ];
+
+        const topClientes = [
+            ['Empresa ABC S.A.', 15, 45000.50],
+            ['Comercial XYZ Ltd.', 12, 38500.75],
+            ['Distribuidora 123', 8, 25000.30],
+            ['Corporativo DEF', 10, 32000.80],
+            ['Grupo GHI', 6, 18500.25]
+        ];
+
+        // Variables globales para los gráficos
+        let lineChart, pieChart, comparativoChart;
+
+        // Función para formatear números como moneda
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-MX', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        // Función para calcular métricas
+        function calcularMetricas() {
+            const totalAnual = ventasMensuales.reduce((sum, mes) => sum + mes[3], 0);
+            const mejorMes = ventasMensuales.reduce((max, mes) => mes[3] > max[3] ? mes : max);
+            const primerMes = ventasMensuales[0][3];
+            const ultimoMes = ventasMensuales[ventasMensuales.length - 1][3];
+            const crecimiento = ((ultimoMes - primerMes) / primerMes * 100);
+            const promedioMensual = totalAnual / ventasMensuales.length;
+
+            // Actualizar métricas en el DOM
+            document.getElementById('totalAnual').textContent = formatCurrency(totalAnual);
+            document.getElementById('numeroMeses').textContent = `${ventasMensuales.length} meses`;
+            document.getElementById('mejorMes').textContent = mejorMes[1];
+            document.getElementById('mejorMesVenta').textContent = formatCurrency(mejorMes[3]);
+            document.getElementById('crecimiento').textContent = `${crecimiento.toFixed(1)}%`;
+            document.getElementById('promedioMensual').textContent = formatCurrency(promedioMensual);
+
+            return { totalAnual, mejorMes, crecimiento, promedioMensual };
+        }
+
+        // Función para crear el gráfico de líneas
+        function crearGraficoLineas() {
+            const ctx = document.getElementById('lineChart').getContext('2d');
+            
+            lineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ventasMensuales.map(mes => mes[1]),
+                    datasets: [{
+                        label: 'Ventas Mensuales',
+                        data: ventasMensuales.map(mes => mes[3]),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Función para crear el gráfico circular
+        function crearGraficoCircular() {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            // Tomar los 6 meses con mayores ventas
+            const topMeses = [...ventasMensuales]
+                .sort((a, b) => b[3] - a[3])
+                .slice(0, 6);
+
+            const colores = ['#f093fb', '#4facfe', '#43e97b', '#fa709a', '#667eea', '#764ba2'];
+
+            pieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: topMeses.map(mes => mes[1]),
+                    datasets: [{
+                        data: topMeses.map(mes => mes[3]),
+                        backgroundColor: colores,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Función para crear el gráfico comparativo
+        function crearGraficoComparativo() {
+            const ctx = document.getElementById('comparativoChart').getContext('2d');
+            
+            comparativoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: comparativoAnual.map(year => year[0].toString()),
+                    datasets: [{
+                        label: 'Ventas Anuales',
+                        data: comparativoAnual.map(year => year[1]),
+                        backgroundColor: ['rgba(102, 126, 234, 0.8)', 'rgba(118, 75, 162, 0.8)'],
+                        borderColor: ['#667eea', '#764ba2'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Llenar estadísticas comparativas
+            const statsContainer = document.getElementById('comparativoStats');
+            statsContainer.innerHTML = '';
+            
+            comparativoAnual.forEach(yearData => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6';
+                col.innerHTML = `
+                    <div class="text-center p-3 bg-light rounded">
+                        <h4>${yearData[0]}</h4>
+                        <p class="mb-1"><strong>${formatCurrency(yearData[1])}</strong></p>
+                        <small class="text-muted">${yearData[2]} facturas</small>
+                    </div>
+                `;
+                statsContainer.appendChild(col);
+            });
+        }
+
+        // Función para llenar la tabla detallada
+        function llenarTablaDetalle() {
+            const tbody = document.getElementById('tablaDetalle');
+            const { totalAnual } = calcularMetricas();
+            
+            tbody.innerHTML = '';
+            
+            ventasMensuales.forEach((mes, index) => {
+                const row = document.createElement('tr');
+                
+                // Calcular cambio vs mes anterior
+                let cambioHtml = '<span class="text-muted">-</span>';
+                if (index > 0) {
+                    const prevMes = ventasMensuales[index - 1];
+                    const cambio = ((mes[3] - prevMes[3]) / prevMes[3] * 100);
+                    const badgeClass = cambio > 0 ? 'bg-success' : cambio < 0 ? 'bg-danger' : 'bg-secondary';
+                    cambioHtml = `<span class="badge ${badgeClass}">${cambio.toFixed(1)}%</span>`;
+                }
+                
+                // Calcular porcentaje del total
+                const porcentaje = (mes[3] / totalAnual * 100);
+                
+                row.innerHTML = `
+                    <td>
+                        <strong>${mes[1]}</strong>
+                        <small class="text-muted d-block">${mes[0]}/2024</small>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-primary">${mes[2]}</span>
+                    </td>
+                    <td class="text-end">
+                        <strong>${formatCurrency(mes[3])}</strong>
+                    </td>
+                    <td class="text-end">
+                        <span class="text-muted">${formatCurrency(mes[4])}</span>
+                    </td>
+                    <td class="text-center">
+                        ${cambioHtml}
+                    </td>
+                    <td class="text-center">
+                        <div class="progress" style="height: 15px;">
+                            <div class="progress-bar bg-info" style="width: ${porcentaje}%">
+                                ${porcentaje.toFixed(1)}%
+                            </div>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Función para llenar top clientes
+        function llenarTopClientes() {
+            const container = document.getElementById('topClientes');
+            container.innerHTML = '';
+            
+            topClientes.slice(0, 5).forEach((cliente, index) => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 mb-3';
+                col.innerHTML = `
+                    <div class="d-flex align-items-center p-3 bg-light rounded">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                ${index + 1}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${cliente[0]}</h6>
+                            <small class="text-muted">${cliente[1]} compras - ${formatCurrency(cliente[2])}</small>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        // Función para exportar datos
+        function exportarDatos() {
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "Mes,Facturas,Total Ventas,Promedio por Venta\n"
+                + ventasMensuales.map(mes => `${mes[1]},${mes[2]},${mes[3]},${mes[4]}`).join('\n');
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "reporte_ventas_mensual.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Event listener para el switch de mostrar promedio
+        document.getElementById('mostrarPromedio').addEventListener('change', function() {
+            const promedioColumnas = document.querySelectorAll('td:nth-child(4)');
+            const display = this.checked ? 'table-cell' : 'none';
+            
+            promedioColumnas.forEach(col => {
+                col.style.display = display;
+            });
+            
+            // También ocultar/mostrar el header
+            const header = document.querySelector('th:nth-child(4)');
+            if (header) {
+                header.style.display = display;
+            }
+        });
+
+        // Inicializar todo cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            calcularMetricas();
+            crearGraficoLineas();
+            crearGraficoCircular();
+            crearGraficoComparativo();
+            llenarTablaDetalle();
+            llenarTopClientes();
+        });
+    </script>
+</body>
+</html>

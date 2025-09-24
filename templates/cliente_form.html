@@ -1,0 +1,186 @@
+<!-- templates/cliente_form.html -->
+{% extends "base.html" %}
+
+{% block title %}
+    {% if cliente %}Editar Cliente{% else %}Nuevo Cliente{% endif %} - ERP Empresarial
+{% endblock %}
+
+{% block page_title %}
+    {% if cliente %}Editar Cliente{% else %}Nuevo Cliente{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-{% if cliente %}edit{% else %}plus{% endif %} me-2"></i>
+                    {% if cliente %}Editar Cliente{% else %}Nuevo Cliente{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="clienteForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">
+                                    <i class="fas fa-user text-primary me-1"></i>
+                                    Nombre Completo *
+                                </label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" 
+                                       value="{% if cliente %}{{ cliente[1] }}{% endif %}" required>
+                                <div class="form-text">Ingrese el nombre completo del cliente</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope text-primary me-1"></i>
+                                    Correo Electrónico *
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{% if cliente %}{{ cliente[2] }}{% endif %}" required>
+                                <div class="form-text">Correo electrónico válido</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="telefono" class="form-label">
+                                    <i class="fas fa-phone text-primary me-1"></i>
+                                    Teléfono
+                                </label>
+                                <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                       value="{% if cliente %}{{ cliente[3] }}{% endif %}">
+                                <div class="form-text">Número de teléfono de contacto</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="rfc" class="form-label">
+                                    <i class="fas fa-id-card text-primary me-1"></i>
+                                    RFC / NIT
+                                </label>
+                                <input type="text" class="form-control" id="rfc" name="rfc" 
+                                       placeholder="Registro Federal de Contribuyentes">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">
+                            <i class="fas fa-map-marker-alt text-primary me-1"></i>
+                            Dirección Completa
+                        </label>
+                        <textarea class="form-control" id="direccion" name="direccion" rows="3">{% if cliente %}{{ cliente[4] }}{% endif %}</textarea>
+                        <div class="form-text">Dirección completa del cliente</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ciudad" class="form-label">
+                                    <i class="fas fa-city text-primary me-1"></i>
+                                    Ciudad
+                                </label>
+                                <input type="text" class="form-control" id="ciudad" name="ciudad">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="codigo_postal" class="form-label">
+                                    <i class="fas fa-mail-bulk text-primary me-1"></i>
+                                    Código Postal
+                                </label>
+                                <input type="text" class="form-control" id="codigo_postal" name="codigo_postal">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tipo_cliente" class="form-label">
+                                    <i class="fas fa-tag text-primary me-1"></i>
+                                    Tipo de Cliente
+                                </label>
+                                <select class="form-select" id="tipo_cliente" name="tipo_cliente">
+                                    <option value="individual">Individual</option>
+                                    <option value="empresa">Empresa</option>
+                                    <option value="gobierno">Gobierno</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="credito_limite" class="form-label">
+                                    <i class="fas fa-dollar-sign text-primary me-1"></i>
+                                    Límite de Crédito
+                                </label>
+                                <input type="number" class="form-control" id="credito_limite" name="credito_limite" 
+                                       step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notas" class="form-label">
+                            <i class="fas fa-sticky-note text-primary me-1"></i>
+                            Notas Adicionales
+                        </label>
+                        <textarea class="form-control" id="notas" name="notas" rows="2" 
+                                  placeholder="Información adicional sobre el cliente..."></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('clientes') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if cliente %}Actualizar Cliente{% else %}Guardar Cliente{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('clienteForm').addEventListener('submit', function(e) {
+    const nombre = document.getElementById('nombre').value.trim();
+    const email = document.getElementById('email').value.trim();
+    
+    if (!nombre || !email) {
+        e.preventDefault();
+        alert('Por favor complete todos los campos obligatorios (*)');
+        return;
+    }
+    
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        e.preventDefault();
+        alert('Por favor ingrese un correo electrónico válido');
+        return;
+    }
+});
+
+// Formatear teléfono mientras se escribe
+document.getElementById('telefono').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 10) {
+        value = value.substring(0, 10);
+        value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+    }
+    e.target.value = value;
+});
+</script>
+{% endblock %}

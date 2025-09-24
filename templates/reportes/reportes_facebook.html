@@ -1,0 +1,422 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes de Facebook{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fab fa-facebook-f me-2"></i>
+                    Reportes de Facebook
+                </h1>
+                <p class="text-muted">Análisis detallado de métricas y rendimiento en Facebook</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de fecha -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" id="filtroForm">
+                        <div class="row align-items-end">
+                            <div class="col-md-3">
+                                <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" 
+                                       value="{{ request.args.get('fecha_inicio', '') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" 
+                                       value="{{ request.args.get('fecha_fin', '') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="tipo_contenido" class="form-label">Tipo de Contenido</label>
+                                <select class="form-select" id="tipo_contenido" name="tipo_contenido">
+                                    <option value="">Todos</option>
+                                    <option value="post" {{ 'selected' if request.args.get('tipo_contenido') == 'post' }}>Posts</option>
+                                    <option value="video" {{ 'selected' if request.args.get('tipo_contenido') == 'video' }}>Videos</option>
+                                    <option value="image" {{ 'selected' if request.args.get('tipo_contenido') == 'image' }}>Imágenes</option>
+                                    <option value="link" {{ 'selected' if request.args.get('tipo_contenido') == 'link' }}>Enlaces</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter me-1"></i>Filtrar
+                                </button>
+                                <a href="{{ url_for('reportes_facebook') }}" class="btn btn-outline-secondary ms-2">
+                                    <i class="fas fa-times me-1"></i>Limpiar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de métricas principales -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Total Alcance</h6>
+                            <h3 class="mb-0">{{ "{:,}".format(metricas.total_alcance or 0) }}</h3>
+                        </div>
+                        <div class="card-icon">
+                            <i class="fas fa-eye fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small>
+                            {% if metricas.cambio_alcance > 0 %}
+                                <i class="fas fa-arrow-up me-1"></i>+{{ "%.1f"|format(metricas.cambio_alcance) }}%
+                            {% elif metricas.cambio_alcance < 0 %}
+                                <i class="fas fa-arrow-down me-1"></i>{{ "%.1f"|format(metricas.cambio_alcance) }}%
+                            {% else %}
+                                <i class="fas fa-minus me-1"></i>0%
+                            {% endif %}
+                            vs período anterior
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Interacciones</h6>
+                            <h3 class="mb-0">{{ "{:,}".format(metricas.total_interacciones or 0) }}</h3>
+                        </div>
+                        <div class="card-icon">
+                            <i class="fas fa-thumbs-up fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small>
+                            {% if metricas.cambio_interacciones > 0 %}
+                                <i class="fas fa-arrow-up me-1"></i>+{{ "%.1f"|format(metricas.cambio_interacciones) }}%
+                            {% elif metricas.cambio_interacciones < 0 %}
+                                <i class="fas fa-arrow-down me-1"></i>{{ "%.1f"|format(metricas.cambio_interacciones) }}%
+                            {% else %}
+                                <i class="fas fa-minus me-1"></i>0%
+                            {% endif %}
+                            vs período anterior
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Nuevos Seguidores</h6>
+                            <h3 class="mb-0">{{ "{:,}".format(metricas.nuevos_seguidores or 0) }}</h3>
+                        </div>
+                        <div class="card-icon">
+                            <i class="fas fa-user-plus fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small>
+                            <i class="fas fa-calendar me-1"></i>Último período
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Tasa de Interacción</h6>
+                            <h3 class="mb-0">{{ "%.2f"|format(metricas.tasa_interaccion or 0) }}%</h3>
+                        </div>
+                        <div class="card-icon">
+                            <i class="fas fa-percentage fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small>
+                            <i class="fas fa-chart-line me-1"></i>Promedio del período
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Evolución de Métricas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="metricsChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Tipos de Contenido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="contentChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Posts -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Top 10 Posts con Mejor Rendimiento
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Post</th>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Alcance</th>
+                                    <th>Interacciones</th>
+                                    <th>Tasa de Interacción</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in top_posts %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if post.imagen_url %}
+                                                <img src="{{ post.imagen_url }}" alt="Post" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-medium">{{ post.contenido[:50] }}{% if post.contenido|length > 50 %}...{% endif %}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ post.fecha_publicacion.strftime('%d/%m/%Y') if post.fecha_publicacion else '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ post.tipo_contenido|title }}</span>
+                                    </td>
+                                    <td>{{ "{:,}".format(post.alcance or 0) }}</td>
+                                    <td>{{ "{:,}".format(post.interacciones or 0) }}</td>
+                                    <td>{{ "%.2f"|format(post.tasa_interaccion or 0) }}%</td>
+                                    <td>
+                                        <a href="{{ post.url_facebook }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Ver en Facebook">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis de audiencia -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Demografía de Audiencia
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="demografiaChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Mejores Horarios de Publicación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="horariosChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de exportación -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="mb-3">Exportar Reportes</h6>
+                    <a href="{{ url_for('exportar_reporte_facebook', formato='pdf') }}" class="btn btn-danger me-2">
+                        <i class="fas fa-file-pdf me-1"></i>Exportar PDF
+                    </a>
+                    <a href="{{ url_for('exportar_reporte_facebook', formato='excel') }}" class="btn btn-success me-2">
+                        <i class="fas fa-file-excel me-1"></i>Exportar Excel
+                    </a>
+                    <a href="{{ url_for('exportar_reporte_facebook', formato='csv') }}" class="btn btn-info">
+                        <i class="fas fa-file-csv me-1"></i>Exportar CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de evolución de métricas
+    const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+    new Chart(metricsCtx, {
+        type: 'line',
+        data: {
+            labels: {{ labels_tiempo|tojson }},
+            datasets: [{
+                label: 'Alcance',
+                data: {{ datos_alcance|tojson }},
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.1
+            }, {
+                label: 'Interacciones',
+                data: {{ datos_interacciones|tojson }},
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Gráfico de tipos de contenido
+    const contentCtx = document.getElementById('contentChart').getContext('2d');
+    new Chart(contentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ labels_contenido|tojson }},
+            datasets: [{
+                data: {{ datos_contenido|tojson }},
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Gráfico de demografía
+    const demografiaCtx = document.getElementById('demografiaChart').getContext('2d');
+    new Chart(demografiaCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ labels_demografia|tojson }},
+            datasets: [{
+                label: 'Porcentaje',
+                data: {{ datos_demografia|tojson }},
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Gráfico de horarios
+    const horariosCtx = document.getElementById('horariosChart').getContext('2d');
+    new Chart(horariosCtx, {
+        type: 'radar',
+        data: {
+            labels: {{ labels_horarios|tojson }},
+            datasets: [{
+                label: 'Interacciones Promedio',
+                data: {{ datos_horarios|tojson }},
+                fill: true,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgb(255, 99, 132)',
+                pointBackgroundColor: 'rgb(255, 99, 132)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(255, 99, 132)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                r: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

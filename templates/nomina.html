@@ -1,0 +1,395 @@
+<!-- templates/nomina.html -->
+{% extends "base.html" %}
+
+{% block title %}Nómina - ERP Empresarial{% endblock %}
+{% block page_title %}Gestión de Nómina{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="text-primary">
+                <i class="fas fa-money-bill-wave me-2"></i>
+                Gestión de Nómina
+            </h4>
+            <div>
+                <a href="/nomina/generar" class="btn btn-success">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Generar Nómina
+                </a>
+                <div class="btn-group ms-2" role="group">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-download me-2"></i>
+                        Exportar
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="exportarExcel()">
+                            <i class="fas fa-file-excel me-2"></i>Excel
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportarPDF()">
+                            <i class="fas fa-file-pdf me-2"></i>PDF
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="periodo" class="form-label">Período</label>
+                        <input type="month" class="form-control" id="periodo" name="periodo" 
+                               value="{{ request.args.get('periodo', '') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="empleado" class="form-label">Empleado</label>
+                        <select class="form-select" id="empleado" name="empleado">
+                            <option value="">Todos los empleados</option>
+                            <!-- Aquí se llenarían los empleados dinámicamente -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select class="form-select" id="estado" name="estado">
+                            <option value="">Todos los estados</option>
+                            <option value="generada">Generada</option>
+                            <option value="pagada">Pagada</option>
+                            <option value="pendiente">Pendiente</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-2"></i>
+                            Filtrar
+                        </button>
+                        <a href="/nomina" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>
+                            Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white opacity-75">Total Nómina Mes</h6>
+                        <h4 class="text-white">$125,000.00</h4>
+                    </div>
+                    <div class="text-white opacity-75">
+                        <i class="fas fa-calculator fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white opacity-75">Empleados Pagados</h6>
+                        <h4 class="text-white">15</h4>
+                    </div>
+                    <div class="text-white opacity-75">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white opacity-75">Pendientes</h6>
+                        <h4 class="text-white">3</h4>
+                    </div>
+                    <div class="text-white opacity-75">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white opacity-75">Deducciones</h6>
+                        <h4 class="text-white">$12,500.00</h4>
+                    </div>
+                    <div class="text-white opacity-75">
+                        <i class="fas fa-minus-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Nómina -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Registro de Nómina
+                </h5>
+                <div class="input-group" style="width: 300px;">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Buscar empleado...">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="nominaTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Empleado</th>
+                                <th>Período</th>
+                                <th>Salario Base</th>
+                                <th>Bonificaciones</th>
+                                <th>Deducciones</th>
+                                <th>Total Neto</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in nomina %}
+                            <tr>
+                                <td><span class="badge bg-secondary">#{{ item[0] }}</span></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ item[1] }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ item[2] }}</span>
+                                </td>
+                                <td>
+                                    <strong class="text-success">${{ "%.2f"|format(item[3]) }}</strong>
+                                </td>
+                                <td>
+                                    <span class="text-success">${{ "%.2f"|format(item[5]) }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-danger">${{ "%.2f"|format(item[4]) }}</span>
+                                </td>
+                                <td>
+                                    <strong class="text-primary">${{ "%.2f"|format(item[6]) }}</strong>
+                                </td>
+                                <td>
+                                    {% if item.estado == 'pagada' %}
+                                        <span class="badge bg-success">Pagada</span>
+                                    {% elif item.estado == 'pendiente' %}
+                                        <span class="badge bg-warning">Pendiente</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Generada</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-primary" 
+                                                onclick="verDetalle({{ item[0] }})" title="Ver Detalle">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success" 
+                                                onclick="imprimirRecibo({{ item[0] }})" title="Imprimir Recibo">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                        {% if item.estado != 'pagada' %}
+                                        <button type="button" class="btn btn-outline-warning" 
+                                                onclick="marcarPagada({{ item[0] }})" title="Marcar como Pagada">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-outline-danger" 
+                                                onclick="eliminarNomina({{ item[0] }})" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                        <p>No hay registros de nómina disponibles</p>
+                                        <a href="/nomina/generar" class="btn btn-primary">
+                                            <i class="fas fa-plus me-2"></i>
+                                            Generar Primera Nómina
+                                        </a>
+                                    </div>
+                                </td>
+            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Ver Detalle -->
+<div class="modal fade" id="detalleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de Nómina</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalleContent">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="imprimirDetalle()">
+                    <i class="fas fa-print me-2"></i>
+                    Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Búsqueda en tiempo real
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('#nominaTable tbody tr');
+        
+        tableRows.forEach(row => {
+            const empleadoName = row.cells[1].textContent.toLowerCase();
+            if (empleadoName.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // Ver detalle de nómina
+    function verDetalle(nominaId) {
+        // Aquí harías una llamada AJAX para obtener el detalle
+        fetch(`/api/nomina/${nominaId}/detalle`)
+            .then(response => response.json())
+            .then(data => {
+                const content = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Información del Empleado</h6>
+                            <p><strong>Nombre:</strong> ${data.empleado.nombre}</p>
+                            <p><strong>Cargo:</strong> ${data.empleado.cargo}</p>
+                            <p><strong>Período:</strong> ${data.periodo}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Cálculos de Nómina</h6>
+                            <table class="table table-sm">
+                                <tr><td>Salario Base:</td><td>$${data.salario_base}</td></tr>
+                                <tr><td>Bonificaciones:</td><td class="text-success">+$${data.bonificaciones}</td></tr>
+                                <tr><td>Deducciones:</td><td class="text-danger">-$${data.deducciones}</td></tr>
+                                <tr><td><strong>Total Neto:</strong></td><td><strong>$${data.total}</strong></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('detalleContent').innerHTML = content;
+                new bootstrap.Modal(document.getElementById('detalleModal')).show();
+            })
+            .catch(error => {
+                alert('Error al cargar el detalle');
+            });
+    }
+    
+    // Imprimir recibo
+    function imprimirRecibo(nominaId) {
+        window.open(`/nomina/${nominaId}/recibo`, '_blank');
+    }
+    
+    // Marcar como pagada
+    function marcarPagada(nominaId) {
+        if (confirm('¿Está seguro de marcar esta nómina como pagada?')) {
+            fetch(`/api/nomina/${nominaId}/pagar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error al actualizar el estado');
+                }
+            });
+        }
+    }
+    
+    // Eliminar nómina
+    function eliminarNomina(nominaId) {
+        if (confirm('¿Está seguro de eliminar este registro de nómina?')) {
+            fetch(`/api/nomina/${nominaId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error al eliminar el registro');
+                }
+            });
+        }
+    }
+    
+    // Exportar a Excel
+    function exportarExcel() {
+        window.location.href = '/nomina/export/excel';
+    }
+    
+    // Exportar a PDF
+    function exportarPDF() {
+        window.location.href = '/nomina/export/pdf';
+    }
+    
+    // Imprimir detalle del modal
+    function imprimirDetalle() {
+        const printContent = document.getElementById('detalleContent').innerHTML;
+        const originalContent = document.body.innerHTML;
+        document.body.innerHTML = printContent;
+        window.print();
+        document.body.innerHTML = originalContent;
+    }
+</script>
+{% endblock %}

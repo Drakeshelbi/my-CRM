@@ -1,0 +1,155 @@
+<!-- templates/login.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - ERP</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .login-form {
+            padding: 40px;
+        }
+        .login-side {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            width: 100%;
+        }
+        .test-credentials {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .credential-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="login-card">
+                    <div class="row g-0">
+                        <div class="col-md-6">
+                            <div class="login-side p-5">
+                                <div>
+                                    <i class="fas fa-building fa-4x mb-4"></i>
+                                    <h3>ERP Empresarial</h3>
+                                    <p class="lead">Sistema integral de gestión empresarial</p>
+                                    <ul class="list-unstyled mt-4">
+                                        <li><i class="fas fa-check me-2"></i> Gestión de Clientes</li>
+                                        <li><i class="fas fa-check me-2"></i> Facturación</li>
+                                        <li><i class="fas fa-check me-2"></i> Nómina</li>
+                                        <li><i class="fas fa-check me-2"></i> CRM y Marketing</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="login-form">
+                                <h4 class="mb-4">Iniciar Sesión</h4>
+                                
+                                {% with messages = get_flashed_messages(with_categories=true) %}
+                                    {% if messages %}
+                                        {% for category, message in messages %}
+                                            <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                                                {{ message }}
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endwith %}
+                                
+                                <form method="POST">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-envelope"></i>
+                                            </span>
+                                            <input type="email" class="form-control" id="email" name="email" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="password" class="form-label">Contraseña</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-lock"></i>
+                                            </span>
+                                            <input type="password" class="form-control" id="password" name="password" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary btn-login">
+                                        <i class="fas fa-sign-in-alt me-2"></i>
+                                        Iniciar Sesión
+                                    </button>
+                                </form>
+                                
+                                <div class="test-credentials">
+                                    <h6 class="text-muted mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Credenciales de Prueba:
+                                    </h6>
+                                    
+                                    <div class="credential-item">
+                                        <strong>Administrador:</strong><br>
+                                        <small>
+                                            <i class="fas fa-envelope me-1"></i> admin@empresa.com<br>
+                                            <i class="fas fa-key me-1"></i> admin123
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="credential-item">
+                                        <strong>Recursos Humanos:</strong><br>
+                                        <small>
+                                            <i class="fas fa-envelope me-1"></i> RH@empresa.com<br>
+                                            <i class="fas fa-key me-1"></i> rh123
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ERP</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            transform: translateX(5px);
+        }
+        .sidebar .nav-link.active {
+            background: #3498db;
+            color: white;
+        }
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .stat-card.success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        .stat-card.warning {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        }
+        .stat-card.info {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+        .stat-card.danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+        }
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .quick-action-btn {
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .quick-action-btn:hover {
+            border-color: var(--bs-primary);
+            transform: scale(1.05);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 p-0">
+                <div class="sidebar p-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">
+                            <i class="fas fa-building"></i>
+                            CRM Drake..
+                        </h4>
+                    </div>
+                    
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="/dashboard">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard
+                        </a>
+                        <a class="nav-link" href="/clientes">
+                            <i class="fas fa-users me-2"></i>
+                            Clientes
+                        </a>
+                        <a class="nav-link" href="/facturas">
+                            <i class="fas fa-file-invoice me-2"></i>
+                            Facturas
+                        </a>
+                        <a class="nav-link" href="/remisiones">
+                            <i class="fas fa-truck me-2"></i>
+                            Remisiones
+                        </a>
+                        <a class="nav-link" href="/empleados">
+                            <i class="fas fa-user-tie me-2"></i>
+                            Empleados
+                        </a>
+                        <a class="nav-link" href="/nomina">
+                            <i class="fas fa-money-bill-wave me-2"></i>
+                            Nómina
+                        </a>
+                        <a class="nav-link" href="/crm">
+                            <i class="fas fa-handshake me-2"></i>
+                            CRM
+                        </a>
+                        <a class="nav-link" href="/marketing">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Marketing
+                        </a>
+                        <a class="nav-link" href="/reportes">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Reportes
+                        </a>
+                    </nav>
+                    
+                    <div class="mt-auto pt-4">
+                        <hr class="text-white">
+                        <div class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-2"></i>
+                                Usuario Demo
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/perfil">Perfil</a></li>
+                                <li><a class="dropdown-item" href="/configuracion">Configuración</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/logout">Cerrar Sesión</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 p-0">
+                <div class="main-content">
+                    <!-- Top Navbar -->
+                    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                        <div class="container-fluid">
+                            <h5 class="mb-0">Dashboard</h5>
+                            <div class="d-flex">
+                                <span class="navbar-text me-3">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <span id="current-date"></span>
+                                </span>
+                                <span class="navbar-text">
+                                    <i class="fas fa-clock me-1"></i>
+                                    <span id="current-time"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </nav>
+                    
+                    <!-- Page Content -->
+                    <div class="container-fluid p-4">
+                        <!-- Bienvenida -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="alert alert-primary d-flex align-items-center">
+                                    <i class="fas fa-info-circle fa-2x me-3"></i>
+                                    <div>
+                                        <h5 class="mb-1">¡Bienvenido al Dashboard!</h5>
+                                        <p class="mb-0">Aquí tienes un resumen completo de tu negocio y las métricas más importantes.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estadísticas Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <div class="card stat-card info">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users fa-2x mb-2"></i>
+                                        <h4>150</h4>
+                                        <p class="mb-0">Total Clientes</p>
+                                        <small class="text-light">+12 este mes</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="card stat-card success">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-file-invoice fa-2x mb-2"></i>
+                                        <h4>48</h4>
+                                        <p class="mb-0">Facturas este Mes</p>
+                                        <small class="text-light">+8 vs mes anterior</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="card stat-card warning">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                                        <h4>$125,480</h4>
+                                        <p class="mb-0">Ventas del Mes</p>
+                                        <small class="text-light">+15% crecimiento</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="card stat-card danger">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-tie fa-2x mb-2"></i>
+                                        <h4>24</h4>
+                                        <p class="mb-0">Empleados Activos</p>
+                                        <small class="text-light">2 nuevos contratados</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Gráfico de Ventas -->
+                            <div class="col-md-8 mb-4">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            Ventas Mensuales
+                                        </h5>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary active">6M</button>
+                                            <button class="btn btn-outline-primary">1A</button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="salesChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Acciones Rápidas -->
+                            <div class="col-md-4 mb-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-bolt me-2"></i>
+                                            Acciones Rápidas
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <a href="/clientes/nuevo" class="btn btn-outline-primary quick-action-btn">
+                                                <i class="fas fa-user-plus me-2"></i>
+                                                Nuevo Cliente
+                                            </a>
+                                            <a href="/facturas/nueva" class="btn btn-outline-success quick-action-btn">
+                                                <i class="fas fa-file-invoice me-2"></i>
+                                                Nueva Factura
+                                            </a>
+                                            <a href="/remisiones/nueva" class="btn btn-outline-info quick-action-btn">
+                                                <i class="fas fa-truck me-2"></i>
+                                                Nueva Remisión
+                                            </a>
+                                            <a href="/empleados/nuevo" class="btn btn-outline-warning quick-action-btn">
+                                                <i class="fas fa-user-tie me-2"></i>
+                                                Nuevo Empleado
+                                            </a>
+                                            <a href="/reportes" class="btn btn-outline-secondary quick-action-btn">
+                                                <i class="fas fa-chart-bar me-2"></i>
+                                                Ver Reportes
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fila de Contenido Principal -->
+                        <div class="row">
+                            <!-- Facturas Recientes -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-file-invoice me-2"></i>
+                                            Facturas Recientes
+                                        </h5>
+                                        <a href="/facturas" class="btn btn-sm btn-outline-primary">Ver Todas</a>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Número</th>
+                                                        <th>Cliente</th>
+                                                        <th>Total</th>
+                                                        <th>Estado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td><span class="badge bg-primary">#001</span></td>
+                                                        <td>Juan Pérez</td>
+                                                        <td><strong>$2,500.00</strong></td>
+                                                        <td><span class="badge bg-success">Pagada</span></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><span class="badge bg-primary">#002</span></td>
+                                                        <td>María González</td>
+                                                        <td><strong>$1,800.00</strong></td>
+                                                        <td><span class="badge bg-warning">Pendiente</span></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><span class="badge bg-primary">#003</span></td>
+                                                        <td>Carlos López</td>
+                                                        <td><strong>$3,200.00</strong></td>
+                                                        <td><span class="badge bg-info">Enviada</span></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><span class="badge bg-primary">#004</span></td>
+                                                        <td>Ana Martínez</td>
+                                                        <td><strong>$950.00</strong></td>
+                                                        <td><span class="badge bg-success">Pagada</span></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Leads y Oportunidades CRM -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-handshake me-2"></i>
+                                            CRM - Leads Recientes
+                                        </h5>
+                                        <a href="/crm" class="btn btn-sm btn-outline-primary">Ver CRM</a>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="list-group list-group-flush">
+                                            <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                                                <div>
+                                                    <h6 class="mb-1">Roberto Silva</h6>
+                                                    <small class="text-muted">Interesado en servicios</small>
+                                                </div>
+                                                <div class="position-relative">
+                                                    <span class="badge bg-success">Nuevo</span>
+                                                    <div class="notification-badge">!</div>
+                                                </div>
+                                            </div>
+                                            <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                                                <div>
+                                                    <h6 class="mb-1">Laura Fernández</h6>
+                                                    <small class="text-muted">Solicitud de cotización</small>
+                                                </div>
+                                                <span class="badge bg-warning">En Proceso</span>
+                                            </div>
+                                            <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                                                <div>
+                                                    <h6 class="mb-1">Pedro Ramírez</h6>
+                                                    <small class="text-muted">Seguimiento programado</small>
+                                                </div>
+                                                <span class="badge bg-info">Programado</span>
+                                            </div>
+                                            <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                                                <div>
+                                                    <h6 class="mb-1">Sofia Castro</h6>
+                                                    <small class="text-muted">Cliente potencial</small>
+                                                </div>
+                                                <span class="badge bg-secondary">Calificado</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fila de Métricas Adicionales -->
+                        <div class="row">
+                            <!-- Estado de Empleados -->
+                            <div class="col-md-4 mb-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-users-cog me-2"></i>
+                                            Estado de Empleados
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="border-end">
+                                                    <h4 class="text-success">22</h4>
+                                                    <small>Activos</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="border-end">
+                                                    <h4 class="text-warning">2</h4>
+                                                    <small>Vacaciones</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-danger">0</h4>
+                                                <small>Ausentes</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Próximos Vencimientos -->
+                            <div class="col-md-4 mb-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Próximos Vencimientos
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="list-group list-group-flush">
+                                            <div class="list-group-item border-0 px-0 py-2">
+                                                <div class="d-flex justify-content-between">
+                                                    <small>Factura #001</small>
+                                                    <small class="text-danger">2 días</small>
+                                                </div>
+                                            </div>
+                                            <div class="list-group-item border-0 px-0 py-2">
+                                                <div class="d-flex justify-content-between">
+                                                    <small>Factura #005</small>
+                                                    <small class="text-warning">5 días</small>
+                                                </div>
+                                            </div>
+                                            <div class="list-group-item border-0 px-0 py-2">
+                                                <div class="d-flex justify-content-between">
+                                                    <small>Contrato Juan P.</small>
+                                                    <small class="text-info">10 días</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actividad Reciente -->
+                            <div class="col-md-4 mb-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-clock me-2"></i>
+                                            Actividad Reciente
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="timeline">
+                                            <div class="d-flex mb-3">
+                                                <div class="flex-shrink-0">
+                                                    <div class="bg-primary rounded-circle p-2">
+                                                        <i class="fas fa-user text-white small"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <small class="text-muted">Hace 5 min</small>
+                                                    <p class="mb-0 small">Nuevo cliente registrado</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex mb-3">
+                                                <div class="flex-shrink-0">
+                                                    <div class="bg-success rounded-circle p-2">
+                                                        <i class="fas fa-file-invoice text-white small"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <small class="text-muted">Hace 15 min</small>
+                                                    <p class="mb-0 small">Factura #002 pagada</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex mb-3">
+                                                <div class="flex-shrink-0">
+                                                    <div class="bg-info rounded-circle p-2">
+                                                        <i class="fas fa-handshake text-white small"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <small class="text-muted">Hace 30 min</small>
+                                                    <p class="mb-0 small">Nuevo lead de Facebook</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+        // Actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            };
+            const timeOptions = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            
+            document.getElementById('current-date').textContent = 
+                now.toLocaleDateString('es-ES', dateOptions);
+            document.getElementById('current-time').textContent = 
+                now.toLocaleTimeString('es-ES', timeOptions);
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Gráfico de Ventas
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+                datasets: [{
+                    label: 'Ventas ($)',
+                    data: [85000, 92000, 78000, 105000, 118000, 125000],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Animaciones de entrada
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

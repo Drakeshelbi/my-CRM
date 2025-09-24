@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración Facebook Marketing - ERP System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .config-card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #1877f2, #42a5f5);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .form-control:focus {
+            border-color: #1877f2;
+            box-shadow: 0 0 0 0.2rem rgba(24, 119, 242, 0.25);
+        }
+        .btn-facebook {
+            background: #1877f2;
+            border-color: #1877f2;
+            color: white;
+        }
+        .btn-facebook:hover {
+            background: #166fe5;
+            border-color: #166fe5;
+            color: white;
+        }
+        .info-card {
+            background: #f8f9fa;
+            border-left: 4px solid #1877f2;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-connected {
+            background-color: #28a745;
+        }
+        .status-disconnected {
+            background-color: #dc3545;
+        }
+        .password-toggle {
+            cursor: pointer;
+        }
+        .step-number {
+            background: #1877f2;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-chart-line me-2"></i>ERP System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('marketing') }}">
+                    <i class="fas fa-arrow-left me-1"></i>Volver a Marketing
+                </a>
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fab fa-facebook-square text-primary me-2"></i>Configuración Facebook Marketing</h2>
+                <p class="text-muted">Configura las credenciales para integrar Facebook Marketing API con tu ERP</p>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <!-- Formulario de Configuración -->
+            <div class="col-lg-8">
+                <div class="card config-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>Credenciales de Facebook API
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="configForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="app_id" class="form-label">
+                                        <i class="fas fa-key me-1"></i>App ID
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="app_id" 
+                                           name="app_id" 
+                                           value="{{ config[0] if config else '' }}" 
+                                           required>
+                                    <div class="form-text">ID de tu aplicación de Facebook</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="app_secret" class="form-label">
+                                        <i class="fas fa-lock me-1"></i>App Secret
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="app_secret" 
+                                               name="app_secret" 
+                                               required>
+                                        <button class="btn btn-outline-secondary password-toggle" 
+                                                type="button" 
+                                                onclick="togglePassword('app_secret')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">Clave secreta de tu aplicación</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="access_token" class="form-label">
+                                    <i class="fas fa-ticket-alt me-1"></i>Access Token
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="access_token" 
+                                           name="access_token" 
+                                           value="{{ config[1] if config else '' }}" 
+                                           required>
+                                    <button class="btn btn-outline-secondary password-toggle" 
+                                            type="button" 
+                                            onclick="togglePassword('access_token')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Token de acceso de larga duración para Facebook Marketing API</div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-facebook">
+                                    <i class="fas fa-save me-2"></i>Guardar Configuración
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="testConnection()">
+                                    <i class="fas fa-plug me-2"></i>Probar Conexión
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Estado de Configuración -->
+                {% if config %}
+                <div class="card config-card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Estado Actual
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>App ID:</strong><br>
+                                <code>{{ config[0] if config else 'No configurado' }}</code>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Última Actualización:</strong><br>
+                                <small class="text-muted">
+                                    {{ moment(config[2]).format('LLLL') if config and config[2] else 'Nunca' }}
+                                </small>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Estado:</strong><br>
+                                <span id="connectionStatus">
+                                    <span class="status-indicator status-disconnected"></span>
+                                    <span class="text-muted">No verificado</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Panel de Ayuda -->
+            <div class="col-lg-4">
+                <div class="card config-card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-question-circle me-2"></i>¿Cómo obtener las credenciales?
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="step-number">1</span>
+                                <strong>Crear App de Facebook</strong>
+                            </div>
+                            <p class="ms-4 small text-muted">
+                                Ve a <a href="https://developers.facebook.com" target="_blank">Facebook Developers</a> 
+                                y crea una nueva aplicación.
+                            </p>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="step-number">2</span>
+                                <strong>Configurar Marketing API</strong>
+                            </div>
+                            <p class="ms-4 small text-muted">
+                                Agrega el producto "Marketing API" a tu aplicación.
+                            </p>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="step-number">3</span>
+                                <strong>Obtener Credenciales</strong>
+                            </div>
+                            <p class="ms-4 small text-muted">
+                                Copia el App ID y App Secret desde la configuración básica.
+                            </p>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="step-number">4</span>
+                                <strong>Generar Access Token</strong>
+                            </div>
+                            <p class="ms-4 small text-muted">
+                                Usa el Graph API Explorer para generar un token de larga duración.
+                            </p>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Importante:</strong> Asegúrate de que tu aplicación tenga los permisos 
+                            <code>ads_management</code> y <code>ads_read</code>.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enlaces útiles -->
+                <div class="card config-card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-external-link-alt me-2"></i>Enlaces Útiles
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="https://developers.facebook.com/apps/" 
+                               target="_blank" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fab fa-facebook me-2"></i>Mis Apps Facebook
+                            </a>
+                            <a href="https://developers.facebook.com/tools/explorer/" 
+                               target="_blank" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-search me-2"></i>Graph API Explorer
+                            </a>
+                            <a href="https://developers.facebook.com/docs/marketing-api/" 
+                               target="_blank" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-book me-2"></i>Documentación API
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const toggle = field.nextElementSibling.querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                toggle.className = 'fas fa-eye-slash';
+            } else {
+                field.type = 'password';
+                toggle.className = 'fas fa-eye';
+            }
+        }
+
+        function testConnection() {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Probando...';
+            button.disabled = true;
+
+            fetch('/api/facebook/test-conexion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                const statusElement = document.getElementById('connectionStatus');
+                
+                if (data.success) {
+                    statusElement.innerHTML = `
+                        <span class="status-indicator status-connected"></span>
+                        <span class="text-success">Conectado</span>
+                    `;
+                    
+                    // Mostrar información adicional si está disponible
+                    if (data.info) {
+                        const alert = document.createElement('div');
+                        alert.className = 'alert alert-success mt-3';
+                        alert.innerHTML = `
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Conexión exitosa!</strong><br>
+                            Usuario: ${data.info.usuario}<br>
+                            ID: ${data.info.id}<br>
+                            Cuentas disponibles: ${data.info.cuentas_disponibles}
+                        `;
+                        
+                        // Remover alertas anteriores
+                        const existingAlert = document.querySelector('.alert-success');
+                        if (existingAlert) existingAlert.remove();
+                        
+                        document.querySelector('.card-body').appendChild(alert);
+                    }
+                } else {
+                    statusElement.innerHTML = `
+                        <span class="status-indicator status-disconnected"></span>
+                        <span class="text-danger">Error de conexión</span>
+                    `;
+                    
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-danger mt-3';
+                    alert.innerHTML = `
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Error:</strong> ${data.message}
+                    `;
+                    
+                    // Remover alertas anteriores
+                    const existingAlert = document.querySelector('.alert-danger');
+                    if (existingAlert) existingAlert.remove();
+                    
+                    document.querySelector('.card-body').appendChild(alert);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const statusElement = document.getElementById('connectionStatus');
+                statusElement.innerHTML = `
+                    <span class="status-indicator status-disconnected"></span>
+                    <span class="text-danger">Error de conexión</span>
+                `;
+            })
+            .finally(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+
+        // Validación del formulario
+        document.getElementById('configForm').addEventListener('submit', function(e) {
+            const appId = document.getElementById('app_id').value;
+            const appSecret = document.getElementById('app_secret').value;
+            const accessToken = document.getElementById('access_token').value;
+
+            if (!appId || !appSecret || !accessToken) {
+                e.preventDefault();
+                alert('Por favor, completa todos los campos requeridos.');
+                return false;
+            }
+
+            // Validación básica del formato del App ID (debe ser numérico)
+            if (!/^\d+$/.test(appId)) {
+                e.preventDefault();
+                alert('El App ID debe contener solo números.');
+                return false;
+            }
+
+            return true;
+        });
+
+        // Auto-verificar conexión si ya hay configuración
+        {% if config %}
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(testConnection, 1000);
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

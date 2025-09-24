@@ -1,0 +1,227 @@
+<!-- templates/empleados.html -->
+{% extends "base.html" %}
+
+{% block title %}Empleados - ERP Empresarial{% endblock %}
+{% block page_title %}Gestión de Empleados{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-user-tie me-2"></i>
+        Empleados
+    </h2>
+    <a href="/empleados/nuevo" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>
+        Nuevo Empleado
+    </a>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ empleados|selectattr('7', 'equalto', 1)|list|length }}</h4>
+                        <p class="mb-0">Empleados Activos</p>
+                    </div>
+                    <i class="fas fa-user-check fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ empleados|selectattr('7', 'equalto', 0)|list|length }}</h4>
+                        <p class="mb-0">Inactivos</p>
+                    </div>
+                    <i class="fas fa-user-times fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>${{ '{:,.2f}'.format(empleados|selectattr('7', 'equalto', 1)|sum(attribute='5')) if empleados else '0.00' }}</h4>
+                        <p class="mb-0">Nómina Total</p>
+                    </div>
+                    <i class="fas fa-dollar-sign fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ empleados|length }}</h4>
+                        <p class="mb-0">Total Empleados</p>
+                    </div>
+                    <i class="fas fa-users fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Lista de Empleados</h5>
+        <div class="input-group" style="width: 300px;">
+            <input type="text" class="form-control" id="searchInput" placeholder="Buscar empleado...">
+            <button class="btn btn-outline-secondary" type="button">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if empleados %}
+            <div class="table-responsive">
+                <table class="table table-hover" id="empleadosTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Cargo</th>
+                            <th>Salario</th>
+                            <th>Fecha Ingreso</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for empleado in empleados %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            {{ empleado[1][:2].upper() }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <strong>{{ empleado[1] }}</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ empleado[2] }}</td>
+                            <td>{{ empleado[3] }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark">{{ empleado[4] }}</span>
+                            </td>
+                            <td>
+                                <strong>${{ '{:,.2f}'.format(empleado[5]) }}</strong>
+                            </td>
+                            <td>{{ empleado[6].strftime('%d/%m/%Y') if empleado[6] else '' }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if empleado[7] else 'secondary' }}">
+                                    {{ 'Activo' if empleado[7] else 'Inactivo' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="/empleados/{{ empleado[0] }}/ver" class="btn btn-outline-primary btn-sm" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/empleados/{{ empleado[0] }}/editar" class="btn btn-outline-secondary btn-sm" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if empleado[7] %}
+                                    <button class="btn btn-outline-warning btn-sm" onclick="toggleEmpleadoStatus({{ empleado[0] }}, false)" title="Desactivar">
+                                        <i class="fas fa-user-times"></i>
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-outline-success btn-sm" onclick="toggleEmpleadoStatus({{ empleado[0] }}, true)" title="Activar">
+                                        <i class="fas fa-user-check"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No hay empleados registrados</h5>
+                <p class="text-muted">Agrega tu primer empleado haciendo clic en el botón "Nuevo Empleado"</p>
+                <a href="/empleados/nuevo" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Agregar Primer Empleado
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Búsqueda en tiempo real
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const filter = this.value.toLowerCase();
+    const table = document.getElementById('empleadosTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        let match = false;
+        
+        for (let j = 0; j < cells.length - 1; j++) { // Excluir columna de acciones
+            if (cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
+                match = true;
+                break;
+            }
+        }
+        
+        rows[i].style.display = match ? '' : 'none';
+    }
+});
+
+// Función para cambiar estado del empleado
+function toggleEmpleadoStatus(empleadoId, newStatus) {
+    const action = newStatus ? 'activar' : 'desactivar';
+    
+    if (confirm(`¿Estás seguro de que deseas ${action} este empleado?`)) {
+        fetch(`/empleados/${empleadoId}/toggle-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ active: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al cambiar el estado del empleado');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cambiar el estado del empleado');
+        });
+    }
+}
+
+// Tooltip para botones
+document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

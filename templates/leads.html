@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Leads - ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header con estadísticas rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-users"></i> Gestión de Leads</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoLeadModal">
+                    <i class="fas fa-plus"></i> Nuevo Lead
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Leads</h6>
+                            <h3 id="totalLeads">{{ leads|length }}</h3>
+                        </div>
+                        <i class="fas fa-user-plus fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Convertidos</h6>
+                            <h3 id="leadsConvertidos">
+                                {{ leads|selectattr("estado", "equalto", "convertido")|list|length }}
+                            </h3>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">En Proceso</h6>
+                            <h3 id="leadsEnProceso">
+                                {{ leads|selectattr("estado", "equalto", "contactado")|list|length + 
+                                   leads|selectattr("estado", "equalto", "calificado")|list|length }}
+                            </h3>
+                        </div>
+                        <i class="fas fa-clock fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Nuevos</h6>
+                            <h3 id="leadsNuevos">
+                                {{ leads|selectattr("estado", "equalto", "nuevo")|list|length }}
+                            </h3>
+                        </div>
+                        <i class="fas fa-star fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="buscarLead" placeholder="Buscar por nombre, email o teléfono...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="filtroEstado">
+                <option value="">Todos los estados</option>
+                <option value="nuevo">Nuevo</option>
+                <option value="contactado">Contactado</option>
+                <option value="calificado">Calificado</option>
+                <option value="no_calificado">No Calificado</option>
+                <option value="convertido">Convertido</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="filtroOrigen">
+                <option value="">Todos los orígenes</option>
+                <option value="Web">Web</option>
+                <option value="Facebook">Facebook</option>
+                <option value="Google">Google</option>
+                <option value="Referencias">Referencias</option>
+                <option value="Llamada">Llamada</option>
+                <option value="Email">Email</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-secondary w-100" onclick="limpiarFiltros()">
+                <i class="fas fa-times"></i> Limpiar
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabla de leads -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Lista de Leads</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaLeads">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Origen</th>
+                            <th>Estado</th>
+                            <th>Fecha Creación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lead in leads %}
+                        <tr data-lead-id="{{ lead[0] }}" class="lead-row">
+                            <td>
+                                <strong>{{ lead[1] }}</strong>
+                                {% if lead[7] %}
+                                <br><small class="text-muted">{{ lead[7][:50] }}{% if lead[7]|length > 50 %}...{% endif %}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if lead[2] %}
+                                <a href="mailto:{{ lead[2] }}">{{ lead[2] }}</a>
+                                {% else %}
+                                <span class="text-muted">Sin email</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if lead[3] %}
+                                <a href="tel:{{ lead[3] }}">{{ lead[3] }}</a>
+                                {% else %}
+                                <span class="text-muted">Sin teléfono</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ lead[4] or 'No especificado' }}</span>
+                            </td>
+                            <td>
+                                {% set estado_class = {
+                                    'nuevo': 'bg-info',
+                                    'contactado': 'bg-warning',
+                                    'calificado': 'bg-primary',
+                                    'no_calificado': 'bg-danger',
+                                    'convertido': 'bg-success'
+                                } %}
+                                <span class="badge {{ estado_class.get(lead[5], 'bg-secondary') }}">
+                                    {{ lead[5].title() }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ moment(lead[6]).format('DD/MM/YYYY HH:mm') if lead[6] else 'No disponible' }}
+                                <br><small class="text-muted">{{ moment(lead[6]).fromNow() if lead[6] }}</small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    {% if lead[5] == 'nuevo' %}
+                                    <button class="btn btn-outline-primary" onclick="contactarLead('{{ lead[0] }}')" title="Contactar">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    {% if lead[5] in ['contactado', 'nuevo'] %}
+                                    <button class="btn btn-outline-warning" onclick="calificarLead('{{ lead[0] }}')" title="Calificar">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    {% if lead[5] == 'calificado' %}
+                                    <button class="btn btn-outline-success" onclick="convertirLead('{{ lead[0] }}')" title="Convertir a Cliente">
+                                        <i class="fas fa-user-check"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <button class="btn btn-outline-info" onclick="verDetallesLead('{{ lead[0] }}')" title="Ver Detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    
+                                    <button class="btn btn-outline-secondary" onclick="editarLead('{{ lead[0] }}')" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para nuevo lead -->
+<div class="modal fade" id="nuevoLeadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus"></i> Nuevo Lead
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('crm') }}">
+                <div class="modal-body">
+                    <input type="hidden" name="tipo" value="lead">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre Completo *</label>
+                            <input type="text" class="form-control" name="nombre" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" name="telefono">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="origen" class="form-label">Origen *</label>
+                            <select class="form-select" name="origen" required>
+                                <option value="">Seleccionar origen...</option>
+                                <option value="Web">Sitio Web</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="Google">Google</option>
+                                <option value="Referencias">Referencias</option>
+                                <option value="Llamada">Llamada telefónica</option>
+                                <option value="Email">Email</option>
+                                <option value="Evento">Evento/Feria</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notas" class="form-label">Notas</label>
+                        <textarea class="form-control" name="notas" rows="3" placeholder="Información adicional sobre el lead..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Crear Lead
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para calificar lead -->
+<div class="modal fade" id="calificarLeadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-star"></i> Calificar Lead
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCalificarLead">
+                    <div class="mb-3">
+                        <label class="form-label">Calificación</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="calificacion" value="calificado" id="calificado">
+                            <label class="form-check-label" for="calificado">
+                                <i class="fas fa-thumbs-up text-success"></i> Calificado (Potencial cliente)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="calificacion" value="no_calificado" id="no_calificado">
+                            <label class="form-check-label" for="no_calificado">
+                                <i class="fas fa-thumbs-down text-danger"></i> No Calificado (No es potencial)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notasCalificacion" class="form-label">Notas de Calificación</label>
+                        <textarea class="form-control" name="notas" rows="3" placeholder="Razón de la calificación..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarCalificacion()">
+                    <i class="fas fa-save"></i> Guardar Calificación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver detalles del lead -->
+<div class="modal fade" id="detallesLeadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user"></i> Detalles del Lead
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detallesLeadContent">
+                <!-- Contenido se carga dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let leadActual = null;
+
+// Funciones de filtrado y búsqueda
+document.getElementById('buscarLead').addEventListener('input', filtrarLeads);
+document.getElementById('filtroEstado').addEventListener('change', filtrarLeads);
+document.getElementById('filtroOrigen').addEventListener('change', filtrarLeads);
+
+function filtrarLeads() {
+    const busqueda = document.getElementById('buscarLead').value.toLowerCase();
+    const estado = document.getElementById('filtroEstado').value;
+    const origen = document.getElementById('filtroOrigen').value;
+    const filas = document.querySelectorAll('.lead-row');
+    
+    filas.forEach(fila => {
+        const texto = fila.textContent.toLowerCase();
+        const estadoFila = fila.querySelector('.badge').textContent.toLowerCase().trim();
+        const origenFila = fila.children[3].textContent.trim();
+        
+        const coincideBusqueda = !busqueda || texto.includes(busqueda);
+        const coincideEstado = !estado || estadoFila.includes(estado);
+        const coincideOrigen = !origen || origenFila === origen;
+        
+        if (coincideBusqueda && coincideEstado && coincideOrigen) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+}
+
+function limpiarFiltros() {
+    document.getElementById('buscarLead').value = '';
+    document.getElementById('filtroEstado').value = '';
+    document.getElementById('filtroOrigen').value = '';
+    filtrarLeads();
+}
+
+// Funciones de acciones sobre leads
+function contactarLead(leadId) {
+    if (confirm('¿Marcar este lead como contactado?')) {
+        fetch(`/api/leads/${leadId}/contactar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success');
+                location.reload();
+            } else {
+                showAlert(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('Error al contactar lead', 'danger');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function calificarLead(leadId) {
+    leadActual = leadId;
+    new bootstrap.Modal(document.getElementById('calificarLeadModal')).show();
+}
+
+function guardarCalificacion() {
+    if (!leadActual) return;
+    
+    const form = document.getElementById('formCalificarLead');
+    const formData = new FormData(form);
+    
+    const data = {
+        calificacion: formData.get('calificacion'),
+        notas: formData.get('notas')
+    };
+    
+    if (!data.calificacion) {
+        showAlert('Por favor selecciona una calificación', 'warning');
+        return;
+    }
+    
+    fetch(`/api/leads/${leadActual}/calificar`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('calificarLeadModal')).hide();
+            location.reload();
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert('Error al calificar lead', 'danger');
+        console.error('Error:', error);
+    });
+}
+
+function convertirLead(leadId) {
+    if (confirm('¿Convertir este lead en cliente? Esta acción creará un nuevo registro de cliente.')) {
+        fetch(`/api/leads/${leadId}/convertir`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success');
+                location.reload();
+            } else {
+                showAlert(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('Error al convertir lead', 'danger');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function verDetallesLead(leadId) {
+    // Encontrar la fila del lead
+    const fila = document.querySelector(`[data-lead-id="${leadId}"]`);
+    if (!fila) return;
+    
+    const celdas = fila.children;
+    const detalles = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6><i class="fas fa-user"></i> Información Personal</h6>
+                <p><strong>Nombre:</strong> ${celdas[0].querySelector('strong').textContent}</p>
+                <p><strong>Email:</strong> ${celdas[1].textContent.includes('@') ? celdas[1].textContent : 'No disponible'}</p>
+                <p><strong>Teléfono:</strong> ${celdas[2].textContent.trim() || 'No disponible'}</p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-info-circle"></i> Estado del Lead</h6>
+                <p><strong>Origen:</strong> ${celdas[3].textContent.trim()}</p>
+                <p><strong>Estado:</strong> ${celdas[4].textContent.trim()}</p>
+                <p><strong>Fecha creación:</strong> ${celdas[5].querySelector('small') ? celdas[5].querySelector('small').textContent : celdas[5].textContent.split('\n')[0]}</p>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6><i class="fas fa-sticky-note"></i> Notas</h6>
+                <p>${celdas[0].querySelector('small') ? celdas[0].querySelector('small').textContent : 'Sin notas adicionales'}</p>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('detallesLeadContent').innerHTML = detalles;
+    new bootstrap.Modal(document.getElementById('detallesLeadModal')).show();
+}
+
+function editarLead(leadId) {
+    // Aquí podrías implementar la edición de leads
+    // Por ahora, redirigir a una página de edición o mostrar un modal
+    showAlert('Función de edición en desarrollo', 'info');
+}
+
+// Función auxiliar para mostrar alertas
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Actualizar estadísticas en tiempo real
+function actualizarEstadisticas() {
+    const filas = document.querySelectorAll('.lead-row:not([style*="display: none"])');
+    let stats = {
+        total: 0,
+        nuevo: 0,
+        contactado: 0,
+        calificado: 0,
+        convertido: 0
+    };
+    
+    filas.forEach(fila => {
+        stats.total++;
+        const estado = fila.querySelector('.badge').textContent.toLowerCase().trim();
+        if (stats.hasOwnProperty(estado)) {
+            stats[estado]++;
+        }
+    });
+    
+    document.getElementById('totalLeads').textContent = stats.total;
+    document.getElementById('leadsConvertidos').textContent = stats.convertido;
+    document.getElementById('leadsEnProceso').textContent = stats.contactado + stats.calificado;
+    document.getElementById('leadsNuevos').textContent = stats.nuevo;
+}
+
+// Llamar a actualizar estadísticas cuando se filtran los leads
+const originalFiltrarLeads = filtrarLeads;
+filtrarLeads = function() {
+    originalFiltrarLeads();
+    actualizarEstadisticas();
+};
+</script>
+{% endblock %}
